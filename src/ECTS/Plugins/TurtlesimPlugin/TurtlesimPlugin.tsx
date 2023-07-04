@@ -20,6 +20,5 @@ export default class TurtlesimPlugin extends ECTSPlugin {
     }
     async init(glayout: InstanceType<typeof Glayout>, ects: ECTS) {
         super.init(glayout, ects);
-        setTimeout(() => { ects.removePlugin(this); }, 1500);
     };
 }

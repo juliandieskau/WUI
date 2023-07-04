@@ -1,11 +1,11 @@
 import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
-import { } from "@/ECTS/Plugins/DefaultPlugin/DefaultPlugin";
+import { } from "@/ECTS/Plugins/TestPlugin/TestPlugin";
 
 export default class DefaultPlugin extends ECTSPlugin {
     constructor() {
-        super("DefaultPlugin", "Default Plugin",
+        super("TestPlugin", "Test Plugin",
             {
-                componentPaths: ["/src/ECTS/Plugins/DefaultPlugin/DefaultPlugin"]
+                componentPaths: ["/src/ECTS/Plugins/TestPlugin/TestPlugin"]
             });
         this.footerData.set("test", <div>Test</div>);
     }

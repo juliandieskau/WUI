@@ -38,7 +38,12 @@ const instance = getCurrentInstance();
 const addComponent = (path: string, title: string) => {
 	const glc = markRaw(
 		defineAsyncComponent(
-			() => import(/* @vite-ignore */ path + ".vue")
+			() => import(/* @vite-ignore */ path + ".vue").catch(
+				(error) => {
+					console.error(error);
+					return import("@/components/NotFound.vue");
+				}
+			)
 		)
 	);
 

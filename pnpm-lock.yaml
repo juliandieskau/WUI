@@ -4,16 +4,19 @@ specifiers:
   '@material-design-icons/svg': ^0.14.9
   '@rushstack/eslint-patch': ^1.2.0
   '@tsconfig/node18': ^2.0.1
+  '@types/leaflet': ^1.9.3
   '@types/node': ^18.16.17
   '@types/roslib': ^1.3.1
   '@vitejs/plugin-vue': ^4.2.3
   '@vitejs/plugin-vue-jsx': ^3.0.1
+  '@vue-leaflet/vue-leaflet': ^0.10.1
   '@vue/eslint-config-prettier': ^7.1.0
   '@vue/eslint-config-typescript': ^11.0.3
   '@vue/tsconfig': ^0.4.0
   eslint: ^8.39.0
   eslint-plugin-vue: ^9.11.0
   golden-layout: ^2.6.0
+  leaflet: ^1.9.4
   npm-run-all: ^4.1.5
   prettier: ^2.8.8
   roslib: ^1.3.0
@@ -25,7 +28,9 @@ specifiers:
 
 dependencies:
   '@material-design-icons/svg': 0.14.9
+  '@vue-leaflet/vue-leaflet': 0.10.1_kgpnrvuelsgzfllouun3gr7nry
   golden-layout: 2.6.0
+  leaflet: 1.9.4
   roslib: 1.3.0
   vite-svg-loader: 4.0.0
   vue: 3.3.4
@@ -33,6 +38,7 @@ dependencies:
 devDependencies:
   '@rushstack/eslint-patch': 1.3.2
   '@tsconfig/node18': 2.0.1
+  '@types/leaflet': 1.9.3
   '@types/node': 18.16.18
   '@types/roslib': 1.3.1
   '@vitejs/plugin-vue': 4.2.3_vite@4.3.9+vue@3.3.4
@@ -696,9 +702,17 @@ packages:
       '@types/node': 18.16.18
     dev: false
 
+  /@types/geojson/7946.0.10:
+    resolution: {integrity: sha512-Nmh0K3iWQJzniTuPRcJn5hxXkfB1T1pgB89SBig5PlJQU5yocazeu4jATJlaA0GYFKWMqDdvYemoSnF2pXgLVA==}
+
   /@types/json-schema/7.0.12:
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
     dev: true
+
+  /@types/leaflet/1.9.3:
+    resolution: {integrity: sha512-Caa1lYOgKVqDkDZVWkto2Z5JtVo09spEaUt2S69LiugbBpoqQu92HYFMGUbYezZbnBkyOxMNPXHSgRrRY5UyIA==}
+    dependencies:
+      '@types/geojson': 7946.0.10
 
   /@types/node/18.16.18:
     resolution: {integrity: sha512-/aNaQZD0+iSBAGnvvN2Cx92HqE5sZCPZtx2TsK+4nvV23fFe09jVDvpArXr2j9DnYlzuU9WuoykDDc6wqvpNcw==}
@@ -887,6 +901,20 @@ packages:
     dependencies:
       '@volar/language-core': 1.7.10
     dev: true
+
+  /@vue-leaflet/vue-leaflet/0.10.1_kgpnrvuelsgzfllouun3gr7nry:
+    resolution: {integrity: sha512-RNEDk8TbnwrJl8ujdbKgZRFygLCxd0aBcWLQ05q/pGv4+d0jamE3KXQgQBqGAteE1mbQsk3xoNcqqUgaIGfWVg==}
+    peerDependencies:
+      '@types/leaflet': ^1.5.7
+      leaflet: ^1.6.0
+    peerDependenciesMeta:
+      '@types/leaflet':
+        optional: true
+    dependencies:
+      '@types/leaflet': 1.9.3
+      leaflet: 1.9.4
+      vue: 3.3.4
+    dev: false
 
   /@vue/babel-helper-vue-transform-on/1.1.5:
     resolution: {integrity: sha512-SgUymFpMoAyWeYWLAY+MkCK3QEROsiUnfaw5zxOVD/M64KQs8D/4oK6Q5omVA2hnvEOE0SCkH2TZxs/jnnUj7w==}
@@ -2152,6 +2180,10 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
     dev: true
+
+  /leaflet/1.9.4:
+    resolution: {integrity: sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==}
+    dev: false
 
   /levn/0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
