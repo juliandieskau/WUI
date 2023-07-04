@@ -36,6 +36,6 @@ export abstract class ECTSPlugin {
     updateFooter(topic: string, message: ROSLIB.Message): void {
         this.footerData.set(topic, <></>);
     };
-    onRemove(): void {
+    onDeactivate(): void {
     };
 } 

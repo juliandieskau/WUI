@@ -13,7 +13,7 @@ const props = defineProps({
 
 <template>
     <footer class="inline">
-        <div v-for="[key, value] in props.data" :key="key" class="item">
+        <div v-for="[key, value] in [...props.data].filter(([k, v]) => v.size > 0)" :key="key" class="item">
             <component v-for="[ikey, ivalue] in value" :key="ikey" :is="ivalue" />
         </div>
     </footer>
@@ -37,7 +37,7 @@ footer {
 }
 
 .item {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--color-background-mute);
     border-radius: 500px;
     font-size: 20px;
     padding: 10px;

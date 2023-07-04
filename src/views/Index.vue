@@ -15,8 +15,8 @@ const footer = ects1.getFooter();
 </script>
 
 <template>
-    <Sidebar :extended="sidebar_extended" @sidebarClose="sidebar_extended = false" />
-    <div class="grid">
+    <Sidebar :plugins="ects1.getPlugins().value" :extended="sidebar_extended" @sidebarClose="sidebar_extended = false" />
+    <div class="flex">
         <Header @sidebarOpen="sidebar_extended = true" />
         <Main :ects="ects1" />
         <Footer :data="footer" />
@@ -24,7 +24,7 @@ const footer = ects1.getFooter();
 </template>
 
 <style scoped>
-.grid {
+.flex {
     display: flex;
     flex-direction: column;
     height: 100vh;

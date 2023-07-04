@@ -49,3 +49,9 @@ defineExpose({
 	setZIndex
 });
 </script>
+
+<style scoped>
+div {
+	background-color: var(--color-background-mute);
+}
+</style>

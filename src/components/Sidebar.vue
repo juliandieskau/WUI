@@ -1,14 +1,24 @@
 <script setup lang="ts">
+import { ECTSPlugin } from '@/ECTS/ECTSPlugin';
+import MaterialSymbolsMenu from '~icons/material-symbols/menu';
 const props = defineProps({
-    extended: Boolean
+    extended: Boolean,
+    plugins: Map<ECTSPlugin, boolean>,
 });
 </script>
 
 <template>
     <div id="sidebar" :class="extended ? 'extended' : null">
         <div id="sidebar-top">
-            <button id="close" @click="$emit('sidebarClose')">Close</button>
-            <h1>Sidebar</h1>
+            <h1>Plugins</h1>
+            <button id="close" @click="$emit('sidebarClose')"><material-symbols-menu style="font-size: 2em;" /></button>
+        </div>
+        <div id="sidebar-main">
+            <div v-for="([plugin, active], index) in plugins" :key="index" class="plugin">
+                <div :class="active ? 'active' : 'inactive'">
+                    {{ plugin.humanName }}
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -16,16 +26,17 @@ const props = defineProps({
 <style scoped>
 #sidebar {
     top: 0;
-    background-color: var(--color-background-soft);
+    background-color: var(--color-background-mute);
+    border-radius: 0 16px 16px 0;
     position: fixed;
-    left: -300px;
-    z-index: 100;
+    left: -500px;
+    z-index: 100000;
     transition: left 0.3s ease-in-out;
-    opacity: 0;
     height: 100vh;
 }
 
 #sidebar.extended {
+    box-shadow: 4px 0px 4px rgba(0, 0, 0, 0.25);
     left: 0;
     opacity: 1;
 }
@@ -34,17 +45,41 @@ const props = defineProps({
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    padding-right: 10px;
+    gap: 20px;
+    height: 80px;
+    width: 500px;
+    padding: 20px;
 }
 
 #close {
-    align-self: stretch;
     aspect-ratio: 1;
-    background-color: var(--color-background-mute);
+    background-color: transparent;
     border: none;
     cursor: pointer;
     color: var(--text-color);
     font-size: 24px;
+}
+
+#sidebar-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    height: calc(100vh - 80px);
+    padding: 20px;
+}
+
+.plugin {
+    align-self: stretch;
+    font-size: 1.5em;
+    padding: 0 8px;
+    background-color: var(--color-background-soft);
+    border-radius: 8px;
+}
+
+.inactive::after {
+    content: " ✖";
+    color: red;
 }
 </style>

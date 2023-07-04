@@ -1,10 +1,20 @@
 <script setup lang="ts" >
+import MaterialSymbolsMenu from '~icons/material-symbols/menu';
+import MaterialSymbolsAddCircle from '~icons/material-symbols/add-circle';
 </script>
 
 <template>
     <header>
-        <button id="sidebar-btn" @click="$emit('sidebarOpen')">Menu</button>
-        <button id="add-robot-btn">+</button>
+        <button title="Menu" id="sidebar-btn" @click="$emit('sidebarOpen')">
+            <material-symbols-menu style="font-size: 2em;" />
+        </button>
+        <select id="select-robot">
+            <option>SPOT #1</option>
+            <option>SPOT #2</option>
+        </select>
+        <button id="add-robot-btn">
+            <material-symbols-add-circle style="font-size: 2em;" />
+        </button>
     </header>
 </template>
 
@@ -14,16 +24,41 @@ header {
     height: 80px;
     background-color: var(--color-background-soft);
     display: flex;
-    gap: 10px;
+    align-items: stretch;
+    align-content: stretch;
+    justify-content: flex-start;
 }
 
 button {
-    align-self: stretch;
     aspect-ratio: 1;
     background-color: var(--color-background-mute);
     border: none;
     cursor: pointer;
     color: var(--text-color);
     font-size: 24px;
+}
+
+select#select-robot {
+    width: 250px;
+    background-color: transparent;
+    border-color: var(--color-text);
+    border-radius: 0 0 8px 0;
+    color: var(--color-text);
+    font-size: 3em;
+}
+
+select:focus {
+    outline: none;
+}
+
+option {
+    background-color: var(--color-background-soft);
+    color: var(--text-color);
+}
+
+
+#add-robot-btn {
+    background-color: transparent;
+
 }
 </style>
