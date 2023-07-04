@@ -18,6 +18,9 @@
         "./src/*"
       ]
     },
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": [
+      "unplugin-icons/types/vue"
+    ],
   }
 }

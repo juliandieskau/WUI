@@ -14,7 +14,7 @@ onMounted(() => {
     if (!GLayoutRoot.value) throw new Error("GLayoutRoot is null");
     let GLayoutRootConverted = (GLayoutRoot.value as unknown as InstanceType<typeof Glayout>);
 
-    for (const plugin of props.ects.getPlugins().value) {
+    for (const [plugin, active] of props.ects.getPlugins().value) {
         plugin.init(GLayoutRootConverted, props.ects);
     }
 
@@ -41,8 +41,8 @@ main {
 .loading {
     width: 100px;
     height: 100px;
-    border: 10px solid #ccc;
-    border-top-color: #333;
+    border: 10px solid var(--color-background-soft);
+    border-top-color: var(--color-text);
     border-radius: 100%;
     animation: spin 1s infinite linear;
     position: fixed;

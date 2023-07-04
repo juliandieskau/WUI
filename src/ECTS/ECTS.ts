@@ -5,7 +5,7 @@ export class ECTS {
     private ros: ROSLIB.Ros;
     private topics: Map<string, ROSLIB.Topic[]> = new Map();
     private footer: Map<string, Map<string, VNode>> = reactive(new Map());
-    private plugins: Ref<ECTSPlugin[]> = ref([]);
+    private plugins: Ref<Map<ECTSPlugin, boolean>> = ref(new Map());
     private status: Ref<"pending" | "connected" | "error"> = ref("pending");
     private pluginFromModule(path: string, module: any): ECTSPlugin | undefined {
         const pluginFolderRegex = /^\.\/Plugins\/([^/]+)\/\1.ts[x]?$/;
@@ -30,19 +30,19 @@ export class ECTS {
     getStatus(): Ref<"pending" | "connected" | "error"> {
         return this.status;
     }
-    getPlugins(): Ref<ECTSPlugin[]> {
+    getPlugins(): Ref<Map<ECTSPlugin, boolean>> {
         console.log('getPlugins => ', this.plugins);
         return this.plugins;
     }
     addPlugin(plugin: ECTSPlugin) {
         console.log("addPlugin", plugin);
-        this.plugins.value.push(plugin);
+        this.plugins.value.set(plugin, true);
         this.footer.set(plugin.name, plugin.footerData);
     }
-    removePlugin(plugin: ECTSPlugin) {
+    deactivatePlugin(plugin: ECTSPlugin) {
         console.log("removePlugin", plugin);
-        plugin.onRemove();
-        this.plugins.value = this.plugins.value.filter((p) => p.name !== plugin.name);
+        this.plugins.value.set(plugin, false);
+        plugin.onDeactivate();
         this.unregisterListeners(plugin);
     }
     sendMessage(topic: ROSLIB.Topic, message: ROSLIB.Message) {
