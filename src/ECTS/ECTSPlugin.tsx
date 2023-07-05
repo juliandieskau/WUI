@@ -13,6 +13,7 @@ export abstract class ECTSPlugin {
     componentPaths: string[] = [];
 
     constructor(name: string, humanName: string, options?: { topics?: Map<string, string>, footerTopics?: Map<string, string>, componentPaths?: string[] }) {
+        console.log(`create ${this.name} `);
         this.name = name;
         this.humanName = humanName;
         if (options?.topics) this.topics = options.topics;
@@ -20,15 +21,14 @@ export abstract class ECTSPlugin {
         this.data = reactive(new Map());
         this.footerData = reactive(new Map());
         if (options?.componentPaths) this.componentPaths = options.componentPaths;
-        console.log(`${this.name} constructor`);
     }
     init(glayout: InstanceType<typeof Glayout>, ects: ECTS): void {
+        console.log(`init ${this.name} (${this.componentPaths.length}  ${this.topics.size}  ${this.footerTopics.size})`);
         this.topics.forEach((messageType, topic) => ects.registerListener(this, topic, messageType));
         this.footerTopics.forEach((messageType, topic) => ects.registerFooter(this, topic, messageType));
         this.componentPaths.forEach(async (componentPath) => {
             await glayout.addGLComponentWithRef(this, componentPath);
         });
-        console.log(`${this.name} init with ${this.topics.size} topics and ${this.footerTopics.size} footer topics`);
     };
     update(topic: string, message: ROSLIB.Message): void {
         this.data.set(topic, message);

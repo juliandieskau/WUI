@@ -31,16 +31,15 @@ export class ECTS {
         return this.status;
     }
     getPlugins(): Ref<Map<ECTSPlugin, boolean>> {
-        console.log('getPlugins => ', this.plugins);
         return this.plugins;
     }
     addPlugin(plugin: ECTSPlugin) {
-        console.log("addPlugin", plugin);
+        console.log("add ", plugin.name);
         this.plugins.value.set(plugin, true);
         this.footer.set(plugin.name, plugin.footerData);
     }
     deactivatePlugin(plugin: ECTSPlugin) {
-        console.log("removePlugin", plugin);
+        console.log("deactivatePlugin", plugin.name);
         this.plugins.value.set(plugin, false);
         plugin.onDeactivate();
         this.unregisterListeners(plugin);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import Glayout from '@/components/Glayout.vue';
 import { onMounted } from 'vue';
 import { ECTS } from '@/ECTS/ECTS';
@@ -10,14 +10,15 @@ const props = defineProps({
 
 const GLayoutRoot = ref<null | HTMLElement>(null);
 
-onMounted(() => {
+onMounted(async () => {
+    await nextTick();
+    await nextTick();
     if (!GLayoutRoot.value) throw new Error("GLayoutRoot is null");
     let GLayoutRootConverted = (GLayoutRoot.value as unknown as InstanceType<typeof Glayout>);
 
     for (const [plugin, active] of props.ects.getPlugins().value) {
-        plugin.init(GLayoutRootConverted, props.ects);
+        if (active) plugin.init(GLayoutRootConverted, props.ects);
     }
-
 });
 
 </script>
@@ -25,7 +26,7 @@ onMounted(() => {
 
 <template>
     <main>
-        <glayout ref="GLayoutRoot" style="width: 100%; height: 100%;"></glayout>
+        <glayout ref="GLayoutRoot" style="width: 100%; height: 100%;" :plugins="ects.getPlugins().value"></glayout>
         <div v-if="ects.getStatus().value == 'pending'" class="loading"></div>
     </main>
 </template>

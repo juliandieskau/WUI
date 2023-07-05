@@ -1,5 +1,5 @@
 <template>
-	<div ref="GLComponent" style="position: absolute; overflow: hidden">
+	<div ref="GLComponent" class="gl-component">
 		<slot :refs="props.refs"></slot>
 	</div>
 </template>
@@ -51,7 +51,9 @@ defineExpose({
 </script>
 
 <style scoped>
-div {
+div.gl-component {
 	background-color: var(--color-background-mute);
+	position: absolute;
+	overflow: hidden
 }
 </style>

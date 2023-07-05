@@ -5,3 +5,7 @@ svg {
   height: 1em;
   fill: currentColor;
 }
+
+.lm_dropTargetIndicator {
+  z-index: 10006 !important;
+}

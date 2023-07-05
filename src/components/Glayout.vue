@@ -4,22 +4,27 @@
 			<!-- Root dom for Golden-Layout manager -->
 		</div>
 		<div style="position: absolute; width: 100%; height: 100%">
-			<gl-component v-for="(pair, index) in AllComponents" :key="pair[0]" :ref="GlcKeyPrefix + pair[0]">
-				<component :is="pair[1]" :refs="Refs.get(index)"></component>
+			<gl-component v-for="([key, component], index) in AllComponents" :key="key" :ref="GlcKeyPrefix + key"
+				class="gl-component-container">
+				<component :is="component" :refs="Refs.get(index)"></component>
 			</gl-component>
 		</div>
 	</div>
 </template>
 <script setup lang="ts">
+const props = defineProps({
+	plugins: { type: Map<ECTSPlugin, Boolean>, required: true }
+});
+
 import { defineAsyncComponent, getCurrentInstance, markRaw, readonly, ref } from 'vue';
 import GlComponent from './GlComponent.vue';
-import { ComponentItemConfig, LayoutConfig, RowOrColumnItemConfig, ResolvedLayoutConfig, type StackItemConfig, VirtualLayout } from 'golden-layout';
-import { ComponentContainer } from 'golden-layout';
+import { ComponentContainer, VirtualLayout } from 'golden-layout';
 import { nextTick } from 'vue';
 import { onMounted } from 'vue';
-import type { LogicalZIndex } from 'golden-layout';
+import { ComponentItemConfig, LayoutConfig, LogicalZIndex, ResolvedLayoutConfig, RowOrColumnItemConfig, StackItemConfig } from 'golden-layout';
 import type { ResolvedComponentItemConfig, Json } from 'golden-layout';
-import type { ECTSPlugin } from '@/ECTS/ECTSPlugin';
+import { ECTSPlugin } from '@/ECTS/ECTSPlugin';
+import { localStorageLoad } from '@/util/util';
 
 
 const GLRoot = ref<null | HTMLElement>(null);
@@ -33,62 +38,70 @@ const UnusedIndices: number[] = [];
 let CurIndex = 0;
 let GlBoundingClientRect: DOMRect;
 
+let debounceTimer: number;
+
+const ComponentTypeMap = new Map<string, string[]>();
 const instance = getCurrentInstance();
 
-const addComponent = (path: string, title: string) => {
-	const glc = markRaw(
-		defineAsyncComponent(
-			() => import(/* @vite-ignore */ path + ".vue").catch(
-				(error) => {
-					console.error(error);
-					return import("@/components/NotFound.vue");
-				}
-			)
-		)
-	);
+onMounted(async () => {
+	await nextTick();
+	loadLayout();
+});
 
-	let index = CurIndex;
-	if (UnusedIndices.length > 0) index = UnusedIndices.pop() as number;
-	else CurIndex++;
+const saveLayout = () => {
+	console.log("saving layout");
+	const layout = GLayout.saveLayout();
+	localStorage.setItem("plugins", JSON.stringify([...props.plugins.entries()].filter(([, active]) => active).map(([plugin]) => plugin)));
+	localStorage.setItem("layout", JSON.stringify(layout));
+};
 
-	AllComponents.value.set(index, glc);
-	return index;
+const loadLayout = () => {
+	console.log("loading layout");
+	const layout: LayoutConfig = localStorageLoad("layout");
+	if (!layout) return;
+
+	loadGLLayout(layout);
+};
+
+const addGLComponentWithRef = async (plugin: ECTSPlugin, path: string) => {
+	let index = await addGLComponent(path, plugin.humanName);
+	if (index == null) throw new Error(`Component Type '${path.split("/").pop()}' already exists. skipping.`);
+	let ref: Map<string, any> = plugin.data;
+	Refs.value.set(index, ref);
 };
 
 const addGLComponent = async (path: string, title: string) => {
+	const pathSplit = path.split("/");
+	const componentType = "" + pathSplit.pop() as string;
+	const pluginName = "" + pathSplit.pop() as string;
+	console.log(ComponentTypeMap.get(pluginName));
+	if (!ComponentTypeMap.has(pluginName)) ComponentTypeMap.set(pluginName, []);
+	if (ComponentTypeMap.get(pluginName)!.includes(componentType)) return null;
+	ComponentTypeMap.get(pluginName)!.push(componentType);
+
 	const index = addComponent(path, title);
 
 	await nextTick(); // wait 1 tick for vue to add the dom 
 
-	const componentType = path.split("/").pop() as string;
-
-	GLayout.addComponent(componentType, { refId: index }, title);
+	GLayout.addComponent(componentType, { refId: index, path: path }, title);
 	return index;
 };
 
-const addGLComponentWithRef = async (plugin: ECTSPlugin, path: string) => {
-	console.log(`${plugin.name} addGLComponentWithRef: ${path}`);
-	let ref: Map<string, any> = plugin.data;
-	let index = await addGLComponent(path, plugin.humanName);
-	Refs.value.set(index, ref);
-	console.log(AllComponents);
-};
-
-
 const loadGLLayout = async (
-	path: string,
-	layoutConfig: LayoutConfig | ResolvedLayoutConfig
+	layoutConfig: LayoutConfig | ResolvedLayoutConfig,
 ) => {
-	GLayout.clear();
-	AllComponents.value.clear();
-
 	const config = (
 		((layoutConfig as ResolvedLayoutConfig).resolved)
 			? LayoutConfig.fromResolved(layoutConfig as ResolvedLayoutConfig)
 			: layoutConfig
 	) as LayoutConfig;
 
-	let contents = [config.root?.content];
+	let content = config.root?.content;
+	if (!content) return;
+	let contents = [content];
+
+	GLayout.clear();
+	AllComponents.value.clear();
 
 	let index = 0;
 	while (contents.length > 0) {
@@ -98,6 +111,13 @@ const loadGLLayout = async (
 			| ComponentItemConfig[];
 		for (let itemConfig of content) {
 			if (itemConfig.type == "component") {
+				const path = (itemConfig.componentState as { path: string })?.path as string;
+				const pathSplit = path.split("/");
+				const componentType = pathSplit.pop() as string;
+				const pluginName = pathSplit.pop() as string;
+				if (!ComponentTypeMap.has(pluginName)) ComponentTypeMap.set(pluginName, []);
+				if (ComponentTypeMap.get(pluginName)!.includes(componentType)) return null;
+				ComponentTypeMap.get(pluginName)!.push(componentType);
 				index = addComponent(
 					path,
 					itemConfig.title as string
@@ -121,8 +141,24 @@ const loadGLLayout = async (
 	GLayout.loadLayout(config);
 };
 
-const getLayoutConfig = () => {
-	return GLayout.saveLayout();
+const addComponent = (path: string, title: string) => {
+	const glc = markRaw(
+		defineAsyncComponent(
+			() => import(/* @vite-ignore */ path + ".vue").catch(
+				(error) => {
+					console.error(error);
+					return import("@/components/NotFound.vue");
+				}
+			)
+		)
+	);
+
+	let index = CurIndex;
+	if (UnusedIndices.length > 0) index = UnusedIndices.pop() as number;
+	else CurIndex++;
+
+	AllComponents.value.set(index, glc);
+	return index;
 };
 
 onMounted(() => {
@@ -162,6 +198,9 @@ onMounted(() => {
 			containerBoundingClientRect.left - GlBoundingClientRect.left;
 		const top = containerBoundingClientRect.top - GlBoundingClientRect.top;
 		((component.glc as unknown as Array<any>)[0] as InstanceType<typeof GlComponent>).setPosAndSize(left, top, width, height);
+
+		if (debounceTimer) clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(saveLayout, 1000);
 	};
 
 	const handleContainerVirtualVisibilityChangeRequiredEvent = (
@@ -231,7 +270,14 @@ onMounted(() => {
 			handleContainerVirtualZIndexChangeRequiredEvent(
 				container,
 				logicalZIndex,
-				defaultZIndex
+				((zIndex) => {
+					switch (zIndex) {
+						case "32":
+							return "999999";
+						default:
+							return defaultZIndex;
+					};
+				})(defaultZIndex),
 			);
 
 		return {
@@ -263,10 +309,8 @@ onMounted(() => {
 });
 
 defineExpose({
-	addGLComponent,
 	addGLComponentWithRef,
-	loadGLLayout,
-	getLayoutConfig
+	addGLComponent,
 });
 
 </script>
