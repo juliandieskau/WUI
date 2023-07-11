@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch, watchEffect } from 'vue';
+import { nextTick, onUnmounted, ref, watch, watchEffect } from 'vue';
 import Glayout from '@/components/Glayout.vue';
 import { onMounted } from 'vue';
 import { ECTS } from '@/ECTS/ECTS';
@@ -36,7 +36,6 @@ onMounted(async () => {
 <template>
     <main>
         <glayout ref="GLayoutRoot" style="width: 100%; height: 100%;" :plugins="ects.getPlugins()"></glayout>
-        <div v-if="ects.getStatus().value == 'pending'" class="loading"></div>
     </main>
 </template>
 

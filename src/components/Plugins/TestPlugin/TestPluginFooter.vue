@@ -2,7 +2,7 @@
     <div>
         <div>
             <material-symbols-globe-uk style="font-size: 2em;" />
-            <span>{{ (refs.get("test1/test") as TestMessage).test }}</span>
+            <span>{{ (refs.get("test1/test") as TestMessage)?.test }}</span>
         </div>
         <div>
             <material-symbols-globe-uk style="font-size: 2em;" />

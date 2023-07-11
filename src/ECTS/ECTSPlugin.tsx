@@ -12,7 +12,6 @@ export abstract class ECTSPlugin {
     componentNames: string[] = [];
 
     constructor(name: string, humanName: string, options?: { topics?: Map<string, string>, footerTopics?: Map<string, string>, componentNames?: string[] }) {
-        console.log(`create ${this.name} `);
         this.name = name;
         this.humanName = humanName;
         if (options?.topics) this.topics = options.topics;
@@ -36,6 +35,8 @@ export abstract class ECTSPlugin {
     update(topic: string, message: ROSLIB.Message): void {
         this.data.set(topic, message);
     };
-    onDeactivate(): void {
+    close(): void {
+        this.data.clear();
+        console.log(`close ${this.name}`);
     };
 } 
