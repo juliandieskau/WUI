@@ -10,16 +10,14 @@ const ects1 = new ECTS("ws://localhost:9090");
 
 const sidebar_extended = ref(false);
 
-const footer = ects1.getFooter();
-
 </script>
 
 <template>
-    <Sidebar :plugins="ects1.getPlugins().value" :extended="sidebar_extended" @sidebarClose="sidebar_extended = false" />
+    <Sidebar :ects="ects1" :extended="sidebar_extended" @sidebarClose="sidebar_extended = false" />
     <div class="flex">
         <Header @sidebarOpen="sidebar_extended = true" />
         <Main :ects="ects1" />
-        <Footer :data="footer" />
+        <Footer :ects="ects1" />
     </div>
 </template>
 

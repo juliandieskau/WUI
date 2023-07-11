@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { ECTS } from '@/ECTS/ECTS';
 import { ECTSPlugin } from '@/ECTS/ECTSPlugin';
+import { Ref } from 'vue';
 import MaterialSymbolsMenu from '~icons/material-symbols/menu';
 const props = defineProps({
     extended: Boolean,
-    plugins: Map<ECTSPlugin, boolean>,
+    ects: { type: ECTS, required: true },
 });
 </script>
 
@@ -14,10 +16,13 @@ const props = defineProps({
             <button id="close" @click="$emit('sidebarClose')"><material-symbols-menu style="font-size: 2em;" /></button>
         </div>
         <div id="sidebar-main">
-            <div v-for="([plugin, active], index) in plugins" :key="index" class="plugin">
+            <div v-for="([plugin, active], index) in ects.getPlugins()" :key="index" class="plugin">
                 <div :class="active ? 'active' : 'inactive'">
                     {{ plugin.humanName }}
                 </div>
+                <button @click="active ? ects.deactivatePlugin(plugin) : ects.activatePlugin(plugin)">
+                    {{ active ? 'Deactivate' : 'Activate' }}
+                </button>
             </div>
         </div>
     </div>
@@ -76,6 +81,9 @@ const props = defineProps({
     padding: 0 8px;
     background-color: var(--color-background-soft);
     border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .inactive::after {

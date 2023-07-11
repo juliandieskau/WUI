@@ -4,16 +4,19 @@
 			<!-- Root dom for Golden-Layout manager -->
 		</div>
 		<div style="position: absolute; width: 100%; height: 100%">
-			<gl-component v-for="([key, component], index) in AllComponents" :key="key" :ref="GlcKeyPrefix + key"
+			<gl-component v-for="([key, [component, path]]) in AllComponents" :key="key" :ref="GlcKeyPrefix + key"
 				class="gl-component-container">
-				<component :is="component" :refs="Refs.get(index)"></component>
+				<component :is="component" :refs="Refs.get(path)"></component>
 			</gl-component>
 		</div>
 	</div>
 </template>
 <script setup lang="ts">
 const props = defineProps({
-	plugins: { type: Map<ECTSPlugin, Boolean>, required: true }
+	plugins: {
+		type: Map<ECTSPlugin, Boolean>,
+		required: true
+	}
 });
 
 import { defineAsyncComponent, getCurrentInstance, markRaw, readonly, ref } from 'vue';
@@ -24,7 +27,8 @@ import { onMounted } from 'vue';
 import { ComponentItemConfig, LayoutConfig, LogicalZIndex, ResolvedLayoutConfig, RowOrColumnItemConfig, StackItemConfig } from 'golden-layout';
 import type { ResolvedComponentItemConfig, Json } from 'golden-layout';
 import { ECTSPlugin } from '@/ECTS/ECTSPlugin';
-import { localStorageLoad } from '@/util/util';
+import { localStorageLoad } from '@/ECTS/util/util';
+import ComponentExistsError from '@/ECTS/Types/Errors';
 
 
 const GLRoot = ref<null | HTMLElement>(null);
@@ -33,25 +37,25 @@ const GlcKeyPrefix = readonly(ref('glc_'));
 
 const MapComponents = new Map<ComponentContainer, { refId: number, glc: InstanceType<typeof GlComponent> }>();
 const AllComponents = ref(new Map<number, any>());
-const Refs = ref(new Map<number, Map<string, any>>());
+const Refs = ref(new Map<string, Map<string, any>>());
 const UnusedIndices: number[] = [];
 let CurIndex = 0;
 let GlBoundingClientRect: DOMRect;
 
 let debounceTimer: number;
 
-const ComponentTypeMap = new Map<string, string[]>();
+let ComponentPathMap = new Map<string, string[]>();
 const instance = getCurrentInstance();
 
 onMounted(async () => {
 	await nextTick();
 	loadLayout();
+
 });
 
 const saveLayout = () => {
 	console.log("saving layout");
 	const layout = GLayout.saveLayout();
-	localStorage.setItem("plugins", JSON.stringify([...props.plugins.entries()].filter(([, active]) => active).map(([plugin]) => plugin)));
 	localStorage.setItem("layout", JSON.stringify(layout));
 };
 
@@ -64,26 +68,25 @@ const loadLayout = () => {
 };
 
 const addGLComponentWithRef = async (plugin: ECTSPlugin, path: string) => {
-	let index = await addGLComponent(path, plugin.humanName);
-	if (index == null) throw new Error(`Component Type '${path.split("/").pop()}' already exists. skipping.`);
 	let ref: Map<string, any> = plugin.data;
-	Refs.value.set(index, ref);
+	Refs.value.set(path, ref);
+	let index = await addGLComponent(path, plugin.humanName);
+	if (index == null) throw new ComponentExistsError("Component already exists");
 };
 
 const addGLComponent = async (path: string, title: string) => {
 	const pathSplit = path.split("/");
-	const componentType = "" + pathSplit.pop() as string;
-	const pluginName = "" + pathSplit.pop() as string;
-	console.log(ComponentTypeMap.get(pluginName));
-	if (!ComponentTypeMap.has(pluginName)) ComponentTypeMap.set(pluginName, []);
-	if (ComponentTypeMap.get(pluginName)!.includes(componentType)) return null;
-	ComponentTypeMap.get(pluginName)!.push(componentType);
+	const componentType = pathSplit.pop() as string;
+	const pluginName = pathSplit.pop() as string;
+	if (!ComponentPathMap.has(pluginName)) ComponentPathMap.set(pluginName, []);
+	if (ComponentPathMap.get(pluginName)!.includes(path)) return null;
+	ComponentPathMap.get(pluginName)!.push(path);
 
 	const index = addComponent(path, title);
 
 	await nextTick(); // wait 1 tick for vue to add the dom 
 
-	GLayout.addComponent(componentType, { refId: index, path: path }, title);
+	GLayout.addComponent(componentType, { refId: index, path: path, enabled: true }, title);
 	return index;
 };
 
@@ -115,9 +118,9 @@ const loadGLLayout = async (
 				const pathSplit = path.split("/");
 				const componentType = pathSplit.pop() as string;
 				const pluginName = pathSplit.pop() as string;
-				if (!ComponentTypeMap.has(pluginName)) ComponentTypeMap.set(pluginName, []);
-				if (ComponentTypeMap.get(pluginName)!.includes(componentType)) return null;
-				ComponentTypeMap.get(pluginName)!.push(componentType);
+				if (!ComponentPathMap.has(pluginName)) ComponentPathMap.set(pluginName, []);
+				if (ComponentPathMap.get(pluginName)!.includes(path)) return null;
+				ComponentPathMap.get(pluginName)!.push(path);
 				index = addComponent(
 					path,
 					itemConfig.title as string
@@ -144,7 +147,7 @@ const loadGLLayout = async (
 const addComponent = (path: string, title: string) => {
 	const glc = markRaw(
 		defineAsyncComponent(
-			() => import(/* @vite-ignore */ path + ".vue").catch(
+			() => import(path + ".vue").catch(
 				(error) => {
 					console.error(error);
 					return import("@/components/NotFound.vue");
@@ -157,7 +160,7 @@ const addComponent = (path: string, title: string) => {
 	if (UnusedIndices.length > 0) index = UnusedIndices.pop() as number;
 	else CurIndex++;
 
-	AllComponents.value.set(index, glc);
+	AllComponents.value.set(index, [glc, path]);
 	return index;
 };
 
@@ -200,7 +203,12 @@ onMounted(() => {
 		((component.glc as unknown as Array<any>)[0] as InstanceType<typeof GlComponent>).setPosAndSize(left, top, width, height);
 
 		if (debounceTimer) clearTimeout(debounceTimer);
-		debounceTimer = setTimeout(saveLayout, 1000);
+		debounceTimer = setTimeout(() => {
+			window.dispatchEvent(new Event("resize"));
+			saveLayout();
+		}, 50);
+
+
 	};
 
 	const handleContainerVirtualVisibilityChangeRequiredEvent = (
@@ -293,10 +301,13 @@ onMounted(() => {
 		if (!component || !component?.glc) {
 			throw new Error("handleUnbindComponentEvent: Component not found");
 		}
+		const [, path] = AllComponents.value.get(component.refId);
+		ComponentPathMap = new Map([...ComponentPathMap].filter(([, value]) => value != path));
+		console.log("unbind: ", ComponentPathMap);
+
 		MapComponents.delete(container);
 		AllComponents.value.delete(component.refId);
 		UnusedIndices.push(component.refId);
-		console.log("unbind: ", container, component);
 	};
 
 	GLayout = new VirtualLayout(
@@ -313,4 +324,4 @@ defineExpose({
 	addGLComponent,
 });
 
-</script>
+</script>@/ECTS/util/util

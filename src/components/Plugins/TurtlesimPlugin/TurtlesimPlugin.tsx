@@ -8,17 +8,7 @@ export default class TurtlesimPlugin extends ECTSPlugin {
         super("TurtlesimPlugin", "Turtlesim", {
             topics: new Map([["turtle1/pose", "turtlesim/Pose"]]),
             footerTopics: new Map([["turtle1/pose", "turtlesim/Pose"]]),
-            componentPaths: ["/src/ECTS/Plugins/TurtlesimPlugin/TurtlesimPlugin"]
+            componentNames: ["TurtlesimPlugin"],
         });
     }
-    updateFooter(topic: string, newData: any) {
-        switch (topic) {
-            case "turtle1/pose":
-                newData = newData as TurtlesimPose;
-                this.footerData.set(topic, <div>X: {newData.x.toFixed(2)} Y: {newData.y.toFixed(2)}</div>);
-        }
-    }
-    async init(glayout: InstanceType<typeof Glayout>, ects: ECTS) {
-        super.init(glayout, ects);
-    };
 }
