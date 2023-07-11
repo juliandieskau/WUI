@@ -1,6 +1,18 @@
 <script setup lang="ts" >
+const props = defineProps({
+    urls: { type: Array<string>, required: true }
+});
+
+const emits = defineEmits({
+    sidebarOpen: () => true,
+    selectConnection: (url: string) => true
+});
+
+const connection = ref(props.urls[0]);
+
 import MaterialSymbolsMenu from '~icons/material-symbols/menu';
 import MaterialSymbolsAddCircle from '~icons/material-symbols/add-circle';
+import { ref } from 'vue';
 </script>
 
 <template>
@@ -8,9 +20,10 @@ import MaterialSymbolsAddCircle from '~icons/material-symbols/add-circle';
         <button title="Menu" id="sidebar-btn" @click="$emit('sidebarOpen')">
             <material-symbols-menu style="font-size: 2em;" />
         </button>
-        <select id="select-robot">
-            <option>SPOT #1</option>
-            <option>SPOT #2</option>
+        <select id="select-robot" v-model="connection" @change="$emit('selectConnection', connection)">
+            <option v-for="url in urls" :key="url">
+                {{ url }}
+            </option>
         </select>
         <button id="add-robot-btn">
             <material-symbols-add-circle style="font-size: 2em;" />
@@ -39,7 +52,7 @@ button {
 }
 
 select#select-robot {
-    width: 250px;
+    width: 450px;
     background-color: transparent;
     border-color: var(--color-text);
     border-radius: 0 0 8px 0;

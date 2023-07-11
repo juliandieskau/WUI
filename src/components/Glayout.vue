@@ -19,7 +19,7 @@ const props = defineProps({
 	}
 });
 
-import { defineAsyncComponent, getCurrentInstance, markRaw, readonly, ref } from 'vue';
+import { defineAsyncComponent, getCurrentInstance, markRaw, onUnmounted, readonly, ref } from 'vue';
 import GlComponent from './GlComponent.vue';
 import { ComponentContainer, VirtualLayout } from 'golden-layout';
 import { nextTick } from 'vue';
@@ -50,7 +50,10 @@ const instance = getCurrentInstance();
 onMounted(async () => {
 	await nextTick();
 	loadLayout();
+});
 
+onUnmounted(() => {
+	GLayout.clear();
 });
 
 const saveLayout = () => {
@@ -145,9 +148,12 @@ const loadGLLayout = async (
 };
 
 const addComponent = (path: string, title: string) => {
+	const pathSplit = path.split("/");
+	const componentType = pathSplit.pop() as string;
+	const pluginName = pathSplit.pop() as string;
 	const glc = markRaw(
 		defineAsyncComponent(
-			() => import(path + ".vue").catch(
+			() => import(`../components/Plugins/${pluginName}/${componentType}.vue`).catch(
 				(error) => {
 					console.error(error);
 					return import("@/components/NotFound.vue");

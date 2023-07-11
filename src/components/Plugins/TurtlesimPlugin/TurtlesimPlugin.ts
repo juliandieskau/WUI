@@ -1,7 +1,4 @@
 import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
-import Glayout from "@/components/Glayout.vue";
-import { ECTS } from "@/ECTS/ECTS";
-import type { TurtlesimPose } from "./TurtleSimMessage";
 
 export default class TurtlesimPlugin extends ECTSPlugin {
     constructor() {
@@ -10,5 +7,6 @@ export default class TurtlesimPlugin extends ECTSPlugin {
             footerTopics: new Map([["turtle1/pose", "turtlesim/Pose"]]),
             componentNames: ["TurtlesimPlugin"],
         });
+        this.data.set("turtle1/pose", { x: 0, y: 0, theta: 0, linear_velocity: 0, angular_velocity: 0 });
     }
 }

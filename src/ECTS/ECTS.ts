@@ -7,17 +7,14 @@ export class ECTS {
     private plugins: Map<ECTSPlugin, boolean> = reactive(new Map());
     private footer: Map<ECTSPlugin, Component> = reactive(new Map());
     private status: Ref<"pending" | "connected" | "error"> = ref("pending");
-    private pluginFromModule(path: string, module: any): ECTSPlugin | undefined {
-        const pluginFolderRegex = /^\.\.\/components\/Plugins\/([^/]+)\/\1.ts[x]?$/;
-        if (!pluginFolderRegex.test(path)) return;
-        const plugin = new (module as any).default() as ECTSPlugin;
-        return plugin;
-    }
+    private url: string;
+
     constructor(url: string) {
+        this.url = url;
         this.ros = new ROSLIB.Ros({ url: url });
         this.ros.on('connection', () => { this.status.value = "connected"; });
         this.ros.on('error', () => { this.status.value = "error"; });
-        const files = import.meta.glob('../components/Plugins/**/*.{ts,tsx}', { eager: true });
+        const files = import.meta.glob('../components/Plugins/**/*.ts', { eager: true });
         Object.entries(files).forEach(([path, module]) => {
             const plugin = this.pluginFromModule(path, module);
             if (!plugin) return;
@@ -33,6 +30,9 @@ export class ECTS {
     }
     getRos(): ROSLIB.Ros {
         return this.ros;
+    }
+    getUrl(): string {
+        return this.url;
     }
     getStatus(): Ref<"pending" | "connected" | "error"> {
         return this.status;
@@ -55,7 +55,6 @@ export class ECTS {
     deactivatePlugin(plugin: ECTSPlugin) {
         console.log("deactivatePlugin", plugin.name);
         this.plugins.set(plugin, false);
-        plugin.onDeactivate();
         this.unregisterListeners(plugin);
     }
     sendMessage(topic: ROSLIB.Topic, message: ROSLIB.Message) {
@@ -81,5 +80,20 @@ export class ECTS {
         this.topics.get(plugin.name)?.forEach((topic) => {
             this.unregisterListener(plugin, topic);
         });
+    }
+    close() {
+        this.plugins.forEach((active, plugin) => {
+            this.deactivatePlugin(plugin);
+            plugin.close();
+        });
+        this.ros.close();
+    }
+
+
+    private pluginFromModule(path: string, module: any): ECTSPlugin | undefined {
+        const pluginFolderRegex = /^\.\.\/components\/Plugins\/([^/]+)\/\1.ts[x]?$/;
+        if (!pluginFolderRegex.test(path)) return;
+        const plugin = new (module as any).default() as ECTSPlugin;
+        return plugin;
     }
 }
