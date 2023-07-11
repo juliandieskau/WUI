@@ -1,20 +1,18 @@
 <script setup lang="ts" >
-import type { VNode } from 'vue';
+import { ECTS } from '@/ECTS/ECTS';
 
 const props = defineProps({
-    data: {
-        type: Map<string, Map<string, VNode>>,
-        required: false,
-        default: () => new Map(),
-    },
+    ects: { type: ECTS, required: true }
 });
+
 
 </script>
 
 <template>
     <footer class="inline">
-        <div v-for="[key, value] in [...props.data].filter(([k, v]) => v.size > 0)" :key="key" class="item">
-            <component v-for="[ikey, ivalue] in value" :key="ikey" :is="ivalue" />
+        <div v-for="[plugin, value] in [...ects.getFooter()].filter((([plugin,]) => { return ects.getPlugins().get(plugin) }))"
+            :key="plugin.name" class="plugin">
+            <component :is="value" class="item" :refs="plugin.data" />
         </div>
     </footer>
 </template>
@@ -23,9 +21,11 @@ const props = defineProps({
 footer {
     width: 100%;
     height: 60px;
-    background-color: var(--color-background-soft);
+    background-color: var(--color-background-mute);
     box-shadow: 0px -4px 4px rgba(0, 0, 0, 0.25);
     z-index: 10;
+    overflow: hidden;
+    font-size: 14px;
 }
 
 .inline {
@@ -36,10 +36,25 @@ footer {
     gap: 10px;
 }
 
-.item {
-    background-color: var(--color-background-mute);
+.plugin {
+    background-color: var(--color-background-soft);
     border-radius: 500px;
-    font-size: 20px;
-    padding: 10px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 16px;
+}
+
+:global(.item > div),
+.item {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.item {
+    gap: 8px;
 }
 </style>

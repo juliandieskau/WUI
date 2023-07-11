@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue';
+import { nextTick, ref, watch, watchEffect } from 'vue';
 import Glayout from '@/components/Glayout.vue';
 import { onMounted } from 'vue';
 import { ECTS } from '@/ECTS/ECTS';
@@ -16,9 +16,18 @@ onMounted(async () => {
     if (!GLayoutRoot.value) throw new Error("GLayoutRoot is null");
     let GLayoutRootConverted = (GLayoutRoot.value as unknown as InstanceType<typeof Glayout>);
 
-    for (const [plugin, active] of props.ects.getPlugins().value) {
+    for (const [plugin, active] of props.ects.getPlugins()) {
         if (active) plugin.init(GLayoutRootConverted, props.ects);
     }
+
+    watch(() => [...props.ects.getPlugins()], (newRaw, oldRaw) => {
+        const newValue = new Map(newRaw);
+        const oldValue = new Map(oldRaw);
+        const active = [...newValue].filter(([, active]) => active).map(([plugin,]) => plugin);
+        active.forEach((plugin) => {
+            if (!oldValue.get(plugin)) plugin.init(GLayoutRootConverted, props.ects);
+        });
+    });
 });
 
 </script>
@@ -26,7 +35,7 @@ onMounted(async () => {
 
 <template>
     <main>
-        <glayout ref="GLayoutRoot" style="width: 100%; height: 100%;" :plugins="ects.getPlugins().value"></glayout>
+        <glayout ref="GLayoutRoot" style="width: 100%; height: 100%;" :plugins="ects.getPlugins()"></glayout>
         <div v-if="ects.getStatus().value == 'pending'" class="loading"></div>
     </main>
 </template>
@@ -49,6 +58,7 @@ main {
     position: fixed;
     top: calc(50% - 50px);
     left: calc(50% - 50px);
+    z-index: 10010;
 }
 
 @keyframes spin {
