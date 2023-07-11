@@ -1,5 +1,5 @@
 <template>
-    <template v-for="[topic, pose] in (props.refs as Map<string, TurtlesimPose>)" :key="topic">
+    <template v-for="[topic, pose] in (props.refs as Map<string, any>)" :key="topic">
         <h1>Turtlesim</h1>
         <span class="key">
             {{ topic }}:
@@ -9,14 +9,13 @@
                 {{ key }}:
             </span>
             <span class="val">
-                {{ v.toFixed(2) }}
+                {{ (v as number).toFixed(2) }}
             </span>
         </div>
     </template>
 </template>
 
 <script setup lang="ts">
-import type { TurtlesimPose } from './TurtleSimMessage';
 
 const props = defineProps({
     refs: { type: Object, required: false, default: () => { } }
@@ -32,7 +31,8 @@ div {
 }
 
 span:first-child {
-    color: white;
+    color: var(--color-heading);
+    font-weight: bold;
 }
 
 span:last-child {

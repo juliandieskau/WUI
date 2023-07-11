@@ -5,3 +5,15 @@ svg {
   height: 1em;
   fill: currentColor;
 }
+
+.lm_dropTargetIndicator {
+  z-index: 10006 !important;
+}
+
+.lm_dragging {
+  z-index: 10005 !important;
+}
+
+.lm_popout {
+  display: none;
+}

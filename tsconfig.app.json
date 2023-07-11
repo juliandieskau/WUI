@@ -16,11 +16,13 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
     },
     "allowSyntheticDefaultImports": true,
+    "preserveConstEnums": true,
     "types": [
       "unplugin-icons/types/vue"
     ],
+    "verbatimModuleSyntax": false,
   }
 }
