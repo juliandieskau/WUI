@@ -12,7 +12,7 @@ const props = defineProps({
     <footer class="inline">
         <div v-for="[plugin, value] in [...ects.getFooter()].filter((([plugin,]) => { return ects.getPlugins().get(plugin) }))"
             :key="plugin.name" class="plugin">
-            <component :is="value" class="item" :refs="plugin.data" />
+            <component :is="value" class="footer-item" :refs="plugin.data" />
         </div>
     </footer>
 </template>
@@ -43,18 +43,17 @@ footer {
     display: flex;
     align-items: center;
     flex-direction: row;
-    gap: 16px;
-}
-
-:global(.item > div),
-.item {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
     gap: 4px;
 }
 
-.item {
-    gap: 8px;
+:global(.footer-item > div),
+.footer-item {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+
+:global(.footer-item svg) {
+    font-size: 1.5em;
 }
 </style>

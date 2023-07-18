@@ -11,7 +11,6 @@ export default class DefaultPlugin extends ECTSPlugin {
             {
                 componentNames: ["TestPlugin"],
                 topics: new Map<string, string>([["test1/test", "test/message"]]),
-                footerTopics: new Map<string, string>([["test1/test", "test/message"]])
             });
     }
     update(topic: string, message: { test: string }) {

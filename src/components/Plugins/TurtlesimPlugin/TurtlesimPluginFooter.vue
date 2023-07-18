@@ -10,9 +10,9 @@
 <script setup lang="ts">
 
 import MaterialSymbolsRotate90DegreesCwOutline from '~icons/material-symbols/rotate-90-degrees-cw-outline';
-import { TurtlesimPose } from './TurtleSimMessage';
+import { TurtlesimPose } from './TurtlesimPlugin';
 const props = defineProps({
-    refs: { type: Map<string, ROSLIB.Message>, required: true, default: () => { } }
+    refs: { type: Map<string, ROSLIB.Message>, required: true }
 });
 
 </script>
