@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { watch } from 'vue';
 import { sensor_msgs, std_msgs } from '@/ECTS/Types/Messages';
 
 import MaterialSymbolsBattery20Rounded from '~icons/material-symbols/battery-20-rounded';
@@ -40,12 +40,12 @@ import MaterialSymbolsPowerPlugOutlineRounded from '~icons/material-symbols/powe
 const props = defineProps({
     refs: { type: Map<string, any>, required: false, default: () => { } }
 });
-const critical = props.refs.get("etcs/battery/is_critical") as std_msgs.Bool;
-watch(() => props.refs.get("etcs/battery/is_critical"), (newVal) => {
+const critical = props.refs.get("ects/battery/is_critical") as std_msgs.Bool;
+watch(() => props.refs.get("ects/battery/is_critical"), (newVal) => {
     critical.data = newVal.data;
 });
-const usage = props.refs.get("etcs/battery/usage") as sensor_msgs.BatteryState;
-watch(() => props.refs.get("etcs/battery/usage"), (newVal: sensor_msgs.BatteryState) => {
+const usage = props.refs.get("ects/battery/usage") as sensor_msgs.BatteryState;
+watch(() => props.refs.get("ects/battery/usage"), (newVal: sensor_msgs.BatteryState) => {
     usage.percentage = newVal.percentage;
     usage.capacity = newVal.capacity;
     usage.design_capacity = newVal.design_capacity;
@@ -56,8 +56,8 @@ watch(() => props.refs.get("etcs/battery/usage"), (newVal: sensor_msgs.BatterySt
     usage.power_supply_technology = newVal.power_supply_technology;
     usage.voltage = newVal.voltage;
 });
-const estimated = props.refs.get("etcs/battery/estimated_time_remaining") as std_msgs.Float32;
-watch(() => props.refs.get("etcs/battery/estimated_time_remaining"), (newVal) => {
+const estimated = props.refs.get("ects/battery/estimated_time_remaining") as std_msgs.Float32;
+watch(() => props.refs.get("ects/battery/estimated_time_remaining"), (newVal) => {
     estimated.data = newVal.data;
 });
 </script>

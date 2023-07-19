@@ -32,7 +32,7 @@ export abstract class ECTSPlugin {
             }
         });
     };
-    update(topic: string, message: ROSLIB.Message): void {
+    update(topic: string, message: any): void {
         this.data.set(topic, message);
     };
     close(): void {

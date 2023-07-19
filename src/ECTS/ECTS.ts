@@ -1,6 +1,7 @@
 import ROSLIB from 'roslib';
 import { Component, defineAsyncComponent, markRaw, reactive, ref, type Ref } from 'vue';
 import type { ECTSPlugin } from './ECTSPlugin';
+import { ects_msgs } from './Types/Messages';
 export class ECTS {
     private ros: ROSLIB.Ros;
     private topics: Map<string, ROSLIB.Topic[]> = new Map();
@@ -25,7 +26,7 @@ export class ECTS {
             if (!active) return;
             this.footer.set(plugin, markRaw(defineAsyncComponent(
                 () => import(`../components/Plugins/${plugin.name}/${plugin.name}Footer.vue`)
-                    .catch(e => { this.footer.delete(plugin); }))));
+                    .catch(() => { this.footer.delete(plugin); }))));
         });
     }
     getRos(): ROSLIB.Ros {
@@ -63,14 +64,27 @@ export class ECTS {
     registerListener(plugin: ECTSPlugin, topicName: string, messageType: string) {
         const topic = new ROSLIB.Topic({ name: topicName, messageType: messageType, ros: this.getRos() });
         this.topics.get(plugin.name) ? this.topics.get(plugin.name)?.push(topic) : this.topics.set(plugin.name, [topic]);
-        if (topicName === "test1/test") {
-            setInterval(() => {
-                plugin.update(topicName, { test: "test", });
-            }, 1000);
-        }
         topic.subscribe((message: ROSLIB.Message) => {
             plugin.update(topicName, message);
         });
+
+        /** TESTING */
+        if (import.meta.env.DEV) {
+            if (topicName === "test1/test") {
+                setInterval(() => {
+                    plugin.update(topicName, { test: "test", });
+                }, 1000);
+            } else if (topicName === "/ects/system/cpu/usage") {
+                setInterval(() => {
+                    const array = [Math.random(), Math.random(), Math.random(), Math.random()];
+                    plugin.update(topicName, {
+                        total_usage: array.reduce((a, b) => a + b, 0) / array.length,
+                        per_core_usage: array,
+                        load_averages: [Math.random(), Math.random(), Math.random(), Math.random()]
+                    } as ects_msgs.CpuUsage);
+                }, 1000);
+            }
+        }
     }
     unregisterListener(plugin: ECTSPlugin, listener: ROSLIB.Topic) {
         this.topics.delete(plugin.name);
