@@ -1,9 +1,6 @@
 import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
-import Glayout from "@/components/Glayout.vue";
-import { ECTS } from "@/ECTS/ECTS";
-import { Message } from "roslib";
 
-export default class DefaultPlugin extends ECTSPlugin {
+export default class TestPlugin extends ECTSPlugin {
     private iteration: number = 0;
 
     constructor() {

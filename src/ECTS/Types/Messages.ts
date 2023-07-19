@@ -8,6 +8,14 @@ export namespace std_msgs {
     }
 }
 
+export namespace ects_msgs {
+    export type CpuUsage = {
+        total_usage: number,
+        per_core_usage: number[],
+        load_averages: number[]
+    }
+}
+
 export namespace sensor_msgs {
     export type BatteryState = {
         voltage: number
