@@ -1,20 +1,25 @@
 <template>
-    <div v-if="props.refs.get('/ects/system/cpu/usage')" class="item">
-        <Bar :data="data" :options="{ responsive: true, scales: { x: { stacked: true } } }"
-            :style="{ color: 'var(--color-text)', position: 'relative', width: '100%' }" />
+    <div ref="el">
+        <div v-if="props.refs.get('/ects/system/cpu/usage')">
+            <Bar :data="data" :key="el?.clientWidth" :options="{ responsive: true, scales: { x: { stacked: true } } }"
+                :style="{ color: 'var(--color-text)' }" />
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ects_msgs } from '@/ECTS/Types/Messages';
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Bar } from 'vue-chartjs';
 import { Chart, BarController, BarElement, LinearScale, CategoryScale, PointElement, ChartData } from 'chart.js';
 
+import MaterialSymbolsWidthRounded from '~icons/material-symbols/width-rounded';
 
 const props = defineProps({
     refs: { type: Map<string, any>, required: true, default: () => { } }
 });
+
+const el = ref<HTMLElement | null>(null);
 
 Chart.register(BarController, BarElement, LinearScale, CategoryScale, PointElement);
 const data = computed(() => {
@@ -35,4 +40,19 @@ const data = computed(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.floating {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--color-text);
+    background-color: var(--color-background);
+    font-size: 1.5em;
+    z-index: 1;
+    border-radius: 500px;
+    aspect-ratio: 1;
+}
+</style>
