@@ -83,6 +83,19 @@ export class ECTS {
                         load_averages: [Math.random(), Math.random(), Math.random(), Math.random()]
                     } as ects_msgs.CpuUsage);
                 }, 1000);
+            } else if (topicName === "/ects/system/mem/usage") {
+                setInterval(() => {
+                    const total = 8192;
+                    const used = Math.random() * total;
+                    plugin.update(topicName, {
+                        used: Math.random() * total,
+                        total: total,
+                        free: total - used,
+                        shared: Math.random() * 100,
+                        buff_cache: Math.random() * 100,
+                        available: Math.random() * 100,
+                    } as ects_msgs.MemoryUsage);
+                }, 1000);
             }
         }
     }

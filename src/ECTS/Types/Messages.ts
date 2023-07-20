@@ -14,6 +14,15 @@ export namespace ects_msgs {
         per_core_usage: number[],
         load_averages: number[]
     }
+
+    export type MemoryUsage = {
+        used: number,
+        total: number,
+        free: number,
+        shared: number,
+        buff_cache: number,
+        available: number,
+    }
 }
 
 export namespace sensor_msgs {
