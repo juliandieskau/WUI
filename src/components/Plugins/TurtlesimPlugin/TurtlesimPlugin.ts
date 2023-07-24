@@ -1,10 +1,8 @@
 import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
+import { geometry_msgs } from "@/ECTS/Types/Messages";
 
 
-export type TurtlesimPose = {
-    x: number;
-    y: number;
-    theta: number;
+export type TurtlesimPose = geometry_msgs.Pose2D & {
     linear_velocity: number;
     angular_velocity: number;
 
