@@ -39,6 +39,14 @@ export namespace ects_msgs {
         available: number,
     }
 
+    export type Waypoint = iosb_nav_msgs.Waypoint & {
+        name: string,
+    }
+
+    export type WaypointList = {
+        name: string,
+        waypoints: ects_msgs.Waypoint[],
+    }
 
 }
 
@@ -78,5 +86,63 @@ export namespace sensor_msgs {
         POWER_SUPPLY_TECHNOLOGY_NICD = 5,
         POWER_SUPPLY_TECHNOLOGY_LIMN = 6;
 }
+export namespace iosb_nav_msgs {
+    export type Waypoint = {
+        pose: geometry_msgs.Pose2D,
+        radius: number,
+        heading_accuracy: number,
+        use_heading: boolean,
+        wait_time: number,
+    }
+}
 
+export namespace nav_msgs {
+    export type Odometry = {
+        child_frame_id: string,
+        pose: geometry_msgs.PoseWithCovariance,
+        twist: geometry_msgs.TwistWithCovariance,
+    }
+}
 
+export namespace geometry_msgs {
+    export type Pose = {
+        position: Point,
+        orientation: Quaternion,
+    }
+
+    export type Point = {
+        x: number,
+        y: number,
+        z: number,
+    }
+
+    export type Quaternion = {
+        x: number,
+        y: number,
+        z: number,
+        w: number,
+    }
+
+    export type Pose2D = {
+        x: number,
+        y: number,
+        theta: number,
+    }
+
+    export type PoseWithCovariance = {
+        pose: Pose,
+        /** 6x6 matrix (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis) */
+        covariance: number[][],
+    }
+
+    export type Twist = {
+        linear: number[],
+        angular: number[],
+    }
+
+    export type TwistWithCovariance = {
+        twist: Twist,
+        /** 6x6 matrix (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis) */
+        covariance: number[][],
+    }
+}
