@@ -6,6 +6,7 @@ import ComponentExistsError from "./Types/Errors";
 
 export abstract class ECTSPlugin {
     name: string = "ECTSPlugin";
+    path: string = "src/components/Plugins/ECTSPlugin.vue";
     humanName: string = "ECTS Plugin";
     topics: Map<string, string> = new Map();
     data: Map<string, ROSLIB.Message> = reactive(new Map<string, ROSLIB.Message>());

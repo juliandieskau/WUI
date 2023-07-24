@@ -72,10 +72,12 @@ export class ECTS {
         if (import.meta.env.DEV) {
             if (topicName === "test1/test") {
                 setInterval(() => {
+                    if (this.plugins.get(plugin) === false) return;
                     plugin.update(topicName, { test: "test", });
                 }, 1000);
             } else if (topicName === "/ects/system/cpu/usage") {
                 setInterval(() => {
+                    if (this.plugins.get(plugin) === false) return;
                     const array = [Math.random(), Math.random(), Math.random(), Math.random()];
                     plugin.update(topicName, {
                         total_usage: array.reduce((a, b) => a + b, 0) / array.length,
@@ -85,6 +87,7 @@ export class ECTS {
                 }, 1000);
             } else if (topicName === "/ects/system/mem/usage") {
                 setInterval(() => {
+                    if (this.plugins.get(plugin) === false) return;
                     const total = 8192;
                     const used = Math.random() * total;
                     plugin.update(topicName, {
@@ -99,6 +102,7 @@ export class ECTS {
             } else if (topicName === "/ects/battery/usage") {
                 let percent = 100;
                 setInterval(() => {
+                    if (this.plugins.get(plugin) === false) return;
                     percent++;
                     percent = (percent % 100);
                     plugin.update(topicName, {
@@ -140,6 +144,7 @@ export class ECTS {
         const pluginFolderRegex = /^\.\.\/components\/Plugins\/([^/]+)\/\1.ts[x]?$/;
         if (!pluginFolderRegex.test(path)) return;
         const plugin = new (module as any).default() as ECTSPlugin;
+        plugin.path = path;
         return plugin;
     }
 }
