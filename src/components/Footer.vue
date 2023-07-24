@@ -21,7 +21,7 @@ const props = defineProps({
 footer {
     width: 100%;
     height: 60px;
-    background-color: var(--color-background-mute);
+    background-color: var(--color-background-soft);
     box-shadow: 0px -4px 4px rgba(0, 0, 0, 0.25);
     z-index: 10;
     overflow: hidden;
@@ -37,13 +37,9 @@ footer {
 }
 
 .plugin {
-    background-color: var(--color-background-soft);
-    border-radius: 500px;
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    gap: 4px;
+    background-color: var(--color-background-mute);
+    border-radius: 16px;
+    padding: 1px;
 }
 
 :global(.footer-item > div),
@@ -51,6 +47,16 @@ footer {
     display: flex;
     align-items: center;
     flex-direction: row;
+}
+
+:global(.footer-item > div) {
+    background-color: var(--color-background-soft);
+    border-radius: 16px;
+    padding: 6px;
+}
+
+.footer-item {
+    gap: 2px;
 }
 
 :global(.footer-item svg) {

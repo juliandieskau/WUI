@@ -212,7 +212,7 @@ onMounted(() => {
 		debounceTimer = setTimeout(() => {
 			window.dispatchEvent(new Event("resize"));
 			saveLayout();
-		}, 50);
+		}, 100);
 
 
 	};
@@ -263,24 +263,25 @@ onMounted(() => {
 
 		MapComponents.set(container, { refId: refId, glc: component });
 
-		container.virtualRectingRequiredEvent = (container, width, height) =>
+		container.virtualRectingRequiredEvent = (container, width, height) => {
 			handleContainerVirtualRectingRequiredEvent(
 				container,
 				width,
 				height
 			);
+		};
 
 		container.virtualVisibilityChangeRequiredEvent = (container, visible) =>
 			handleContainerVirtualVisibilityChangeRequiredEvent(
 				container,
 				visible
 			);
-
 		container.virtualZIndexChangeRequiredEvent = (
 			container,
 			logicalZIndex,
 			defaultZIndex
-		) =>
+		) => {
+			//console.log("handleContainerVirtualZIndexChangeRequiredEvent", container, logicalZIndex, defaultZIndex);
 			handleContainerVirtualZIndexChangeRequiredEvent(
 				container,
 				logicalZIndex,
@@ -288,11 +289,14 @@ onMounted(() => {
 					switch (zIndex) {
 						case "32":
 							return "999999";
+						case "41":
+							return "999999";
 						default:
 							return defaultZIndex;
 					};
 				})(defaultZIndex),
 			);
+		};
 
 		return {
 			component,
@@ -330,4 +334,4 @@ defineExpose({
 	addGLComponent,
 });
 
-</script>@/ECTS/util/util
+</script>

@@ -22,6 +22,7 @@ const setPosAndSize = (left: number, top: number, width: number, height: number)
 		el.style.top = numberToPixels(top);
 		el.style.width = numberToPixels(width);
 		el.style.height = numberToPixels(height);
+		el.dispatchEvent(new Event("resize"));
 	}
 };
 
@@ -54,6 +55,12 @@ defineExpose({
 div.gl-component {
 	background-color: var(--color-background-mute);
 	position: absolute;
-	overflow: hidden
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+	width: 0px;
+	background: transparent;
 }
 </style>

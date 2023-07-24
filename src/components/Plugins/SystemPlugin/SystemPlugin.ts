@@ -7,9 +7,9 @@ export default class SystemPlugin extends ECTSPlugin {
                 componentNames: ["SystemPlugin"],
                 topics: new Map<string, string>([
                     ["/ects/system/cpu/usage", "CpuUsage"],
+                    ["/ects/system/mem/usage", "MemoryUsage"],
                 ]),
             });
-
     }
 }
 

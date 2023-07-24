@@ -2,7 +2,11 @@
 import { ECTS } from '@/ECTS/ECTS';
 import { ECTSPlugin } from '@/ECTS/ECTSPlugin';
 import { Ref } from 'vue';
+
 import MaterialSymbolsMenu from '~icons/material-symbols/menu';
+import MdiEyeOffOutline from '~icons/mdi/eye-off-outline';
+import MdiEyeOutline from '~icons/mdi/eye-outline';
+
 const props = defineProps({
     extended: Boolean,
     ects: { type: ECTS, required: true },
@@ -17,12 +21,16 @@ const props = defineProps({
         </div>
         <div id="sidebar-main">
             <div v-for="([plugin, active], index) in ects.getPlugins()" :key="index" class="plugin">
-                <div :class="active ? 'active' : 'inactive'">
+                <div :class="active ? 'active' : 'inactive'" class="name">
                     {{ plugin.humanName }}
                 </div>
-                <button @click="active ? ects.deactivatePlugin(plugin) : ects.activatePlugin(plugin)">
-                    {{ active ? 'Deactivate' : 'Activate' }}
+                <button @click="active ? ects.deactivatePlugin(plugin) : ects.activatePlugin(plugin)" class="eye"
+                    :title="active ? 'disable' : 'enable'" type="button">
+                    <mdi-eye-outline v-if="active" />
+                    <mdi-eye-off-outline v-else style="color: var(--color-important)" />
                 </button>
+                <div class="description">
+                </div>
             </div>
         </div>
     </div>
@@ -38,6 +46,7 @@ const props = defineProps({
     z-index: 100000;
     transition: left 0.3s ease-in-out;
     height: 100vh;
+    width: 500px;
 }
 
 #sidebar.extended {
@@ -75,19 +84,42 @@ const props = defineProps({
     padding: 20px;
 }
 
+.inactive::after {
+    content: " (disabled)";
+    color: var(--color-background-mute);
+}
+
 .plugin {
     align-self: stretch;
     font-size: 1.5em;
     padding: 0 8px;
     background-color: var(--color-background-soft);
     border-radius: 8px;
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-areas:
+        'name eye'
+        'description description';
     justify-content: space-between;
+
 }
 
-.inactive::after {
-    content: " ✖";
-    color: red;
+.description {
+    grid-area: description;
+    color: var(--color-background-mute);
+}
+
+.name {
+    grid-area: name;
+}
+
+.eye {
+    grid-area: eye;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 22px;
+    display: flex;
+    align-items: center;
 }
 </style>
