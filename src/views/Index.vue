@@ -8,13 +8,26 @@ import { ECTS } from '@/ECTS/ECTS';
 
 const sidebar_extended = ref(false);
 
-const urls: Array<string> = ["ws://localhost:9090", "ws://localhost:9091"];
+const urls: Array<string> = reactive(["ws://localhost:9090", "ws://localhost:9091"]);
 const index = ref(0);
 let connection = new ECTS(urls[index.value]);
 
 const reload = ref(0);
 
+const addConnection = (url: string) => {
+    try {
+        let parsed = new URL(url);
+        if (parsed.protocol != "ws:") {
+            throw new Error("Invalid protocol");
+        }
+        console.log("Valid URL: ", url);
+        urls.push(url);
+    } catch {
+        console.error("Invalid URL: ", url);
+        return;
+    }
 
+};
 
 const changeConnection = (url: string) => {
     connection.close();
@@ -26,7 +39,8 @@ const changeConnection = (url: string) => {
 <template>
     <Sidebar :ects="connection" :extended="sidebar_extended" @sidebarClose="sidebar_extended = false" />
     <div class="flex">
-        <Header :urls="urls" @selectConnection="changeConnection" @sidebarOpen="sidebar_extended = true" />
+        <Header :urls="urls" @selectConnection="changeConnection" @sidebarOpen="sidebar_extended = true"
+            @addConnection="addConnection" />
         <Main :ects="connection" :key="reload" />
         <Footer :ects="connection" />
     </div>
