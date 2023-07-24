@@ -9,12 +9,27 @@ export namespace std_msgs {
 }
 
 export namespace ects_msgs {
+    export type Aggregation = {
+        ectsname: string,
+        type: typeof Aggregation.Type,
+        interval: number,
+        nreadings: number,
+        keep_amount: number,
+    }
+    export namespace Aggregation {
+        export namespace Type {
+            export const TYPE_INTERVAL = 0, TYPE_READINGS = 1;
+        }
+    }
     export type CpuUsage = {
         total_usage: number,
         per_core_usage: number[],
         load_averages: number[]
     }
-
+    export type CpuUsageHistory = {
+        averaging_duration: number,
+        measurements: CpuUsage[],
+    }
     export type MemoryUsage = {
         used: number,
         total: number,
@@ -23,6 +38,8 @@ export namespace ects_msgs {
         buff_cache: number,
         available: number,
     }
+
+
 }
 
 export namespace sensor_msgs {

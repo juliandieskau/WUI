@@ -281,7 +281,7 @@ onMounted(() => {
 			logicalZIndex,
 			defaultZIndex
 		) => {
-			console.log("handleContainerVirtualZIndexChangeRequiredEvent", container, logicalZIndex, defaultZIndex);
+			//console.log("handleContainerVirtualZIndexChangeRequiredEvent", container, logicalZIndex, defaultZIndex);
 			handleContainerVirtualZIndexChangeRequiredEvent(
 				container,
 				logicalZIndex,
@@ -334,4 +334,4 @@ defineExpose({
 	addGLComponent,
 });
 
-</script>@/ECTS/util/util
+</script>

@@ -1,7 +1,7 @@
 import ROSLIB from 'roslib';
 import { Component, defineAsyncComponent, markRaw, reactive, ref, type Ref } from 'vue';
 import type { ECTSPlugin } from './ECTSPlugin';
-import { ects_msgs } from './Types/Messages';
+import { ects_msgs, sensor_msgs, std_msgs } from './Types/Messages';
 export class ECTS {
     private ros: ROSLIB.Ros;
     private topics: Map<string, ROSLIB.Topic[]> = new Map();
@@ -88,7 +88,7 @@ export class ECTS {
                     const total = 8192;
                     const used = Math.random() * total;
                     plugin.update(topicName, {
-                        used: Math.random() * total,
+                        used: used,
                         total: total,
                         free: total - used,
                         shared: Math.random() * 100,
@@ -96,6 +96,25 @@ export class ECTS {
                         available: Math.random() * 100,
                     } as ects_msgs.MemoryUsage);
                 }, 1000);
+            } else if (topicName === "/ects/battery/usage") {
+                let percent = 100;
+                setInterval(() => {
+                    percent++;
+                    percent = (percent % 100);
+                    plugin.update(topicName, {
+                        voltage: Math.random() * 100,
+                        current: Math.random() * 100,
+                        charge: Math.random() * 100,
+                        capacity: Math.random() * 100,
+                        design_capacity: Math.random() * 100,
+                        percentage: percent / 100,
+                        power_supply_status: sensor_msgs.POWER_SUPPLY_STATUS_CHARGING,
+                        power_supply_health: sensor_msgs.POWER_SUPPLY_HEALTH_GOOD,
+                        power_supply_technology: sensor_msgs.POWER_SUPPLY_TECHNOLOGY_LIPO,
+                    } as sensor_msgs.BatteryState);
+                    plugin.update("/ects/battery/is_critical", { data: percent < 20 } as std_msgs.Bool);
+                    plugin.update("/ects/battery/estimated_time_remaining", { data: 100 - percent } as std_msgs.Float32);
+                }, 100);
             }
         }
     }
