@@ -47,7 +47,7 @@ import { computed, ref } from 'vue';
         <button title="Menu" id="sidebar-btn" @click="$emit('sidebarOpen')" type="button">
             <material-symbols-menu style="font-size: 2em;" />
         </button>
-        <select id="select-robot" v-model="connection" title="select connection">
+        <select id="select-robot" v-model="connection" title="select connection" placeholder="add robot">
             <option v-for="url in urls" :key="url">
                 {{ url }}
             </option>

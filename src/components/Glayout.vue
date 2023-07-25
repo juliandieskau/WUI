@@ -313,7 +313,7 @@ onMounted(() => {
 		}
 		const [, path] = AllComponents.value.get(component.refId);
 		ComponentPathMap = new Map([...ComponentPathMap].filter(([, value]) => value != path));
-		console.log("unbind: ", ComponentPathMap);
+		console.log("unbind: ", path);
 
 		MapComponents.delete(container);
 		AllComponents.value.delete(component.refId);

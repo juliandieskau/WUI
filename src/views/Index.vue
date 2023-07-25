@@ -26,15 +26,29 @@ const addConnection = (url: string) => {
     else console.error("URL already exists: ", url);
 };
 
-const removeConnection = (index: number) => {
+const removeConnection = () => {
     connection.value.close();
-    urls.splice(index, 1);
+    urls.splice(index.value, 1);
+    index.value = 0;
     reload();
 };
 
 const changeConnection = (newIndex: number) => {
     connection.value.close();
     index.value = newIndex;
+    reload();
+};
+
+const clearLayout = () => {
+    localStorage.removeItem("layout");
+    reload();
+};
+
+const clearUrls = () => {
+    localStorage.removeItem("urls");
+    localStorage.removeItem("urlIndex");
+    urls.splice(0, urls.length);
+    index.value = 0;
     reload();
 };
 
@@ -48,7 +62,8 @@ watch(index, (value) => {
 </script>
 
 <template>
-    <Sidebar :ects="connection" :extended="sidebar_extended" @sidebarClose="sidebar_extended = false" />
+    <Sidebar :ects="connection" :extended="sidebar_extended" @sidebarClose="sidebar_extended = false"
+        @clearLayout="clearLayout" @clearUrls="clearUrls" @removeConnection="removeConnection" />
     <div class="flex">
         <Header :index="index" :urls="urls" @changeConnection="changeConnection" @sidebarOpen="sidebar_extended = true"
             @addConnection="addConnection" />
