@@ -36,7 +36,7 @@ import { computed, onMounted, onUnmounted, ref, watch, type Ref } from "vue";
 import { DragEndEvent, type PointTuple } from "leaflet";
 
 import MdiDog from '~icons/mdi/dog';
-import { ects_msgs, geometry_msgs, nav_msgs } from "@/ECTS/Types/Messages";
+import { ects_msgs, geometry_msgs } from "@/ECTS/Types/Messages";
 
 const el: Ref<HTMLDivElement | null> = ref(null);
 
