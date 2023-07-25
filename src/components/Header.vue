@@ -1,11 +1,14 @@
 <script setup lang="ts" >
 const props = defineProps({
-    urls: { type: Array<string>, required: true }
+    urls: { type: Array<string>, required: true },
+    index: { type: Number, required: true }
 });
 
-const emits = defineEmits({
+const emit = defineEmits({
     sidebarOpen: () => true,
-    selectConnection: (url: string) => true,
+    changeConnection: (index: number) => {
+        return index >= 0;
+    },
     addConnection: (url: string) => {
         try {
             let parsed = new URL(url);
@@ -20,7 +23,14 @@ const emits = defineEmits({
     },
 });
 
-const connection = ref(props.urls[0]);
+const connection = computed({
+    get: () => {
+        return props.urls[props.index];
+    },
+    set: (value) => {
+        emit("changeConnection", props.urls.indexOf(value));
+    }
+});
 const expanded = ref(false);
 const url = ref("");
 
@@ -37,8 +47,7 @@ import { computed, ref } from 'vue';
         <button title="Menu" id="sidebar-btn" @click="$emit('sidebarOpen')" type="button">
             <material-symbols-menu style="font-size: 2em;" />
         </button>
-        <select id="select-robot" v-model="connection" @change="$emit('selectConnection', connection)"
-            title="select connection">
+        <select id="select-robot" v-model="connection" title="select connection">
             <option v-for="url in urls" :key="url">
                 {{ url }}
             </option>

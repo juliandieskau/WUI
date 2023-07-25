@@ -3,14 +3,17 @@ import Header from '@/components/Header.vue';
 import Main from '@/components/Main.vue';
 import Footer from '@/components/Footer.vue';
 import Sidebar from '@/components/Sidebar.vue';
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { ECTS } from '@/ECTS/ECTS';
 
 const sidebar_extended = ref(false);
 
-const urls: Array<string> = reactive(["ws://localhost:9090"]);
-const index = ref(0);
-let connection = new ECTS(urls[index.value]);
+const urls: Array<string> = reactive(localStorage.getItem("urls") ? JSON.parse(localStorage.getItem("urls")!) : []);
+const index = ref(localStorage.getItem("urlIndex") && JSON.parse(localStorage.getItem("urlIndex")!) >= 0 && JSON.parse(localStorage.getItem("urlIndex")!) < urls.length
+    ? JSON.parse(localStorage.getItem("urlIndex")!) : 0);
+let connection = computed(() => {
+    return new ECTS(urls[index.value]);
+});
 
 const reloadCounter = ref(0);
 
@@ -18,37 +21,36 @@ const reload = () => {
     reloadCounter.value++;
 };
 
-const addConnection = (url: string): boolean => {
-    try {
-        let parsed = new URL(url);
-        if (parsed.protocol != "ws:") {
-            throw new Error("Invalid protocol");
-        }
-        if (!urls.find(u => u == url)) urls.push(url);
-        return true;
-    } catch {
-        console.error("Invalid URL: ", url);
-        return false;
-    }
+const addConnection = (url: string) => {
+    if (!urls.find(u => u == url)) urls.push(url);
+    else console.error("URL already exists: ", url);
 };
 
 const removeConnection = (index: number) => {
-    connection.close();
+    connection.value.close();
     urls.splice(index, 1);
     reload();
 };
 
-const changeConnection = (url: string) => {
-    connection.close();
-    connection = new ECTS(url);
+const changeConnection = (newIndex: number) => {
+    connection.value.close();
+    index.value = newIndex;
     reload();
 };
+
+watch(urls, (value) => {
+    localStorage.setItem("urls", JSON.stringify(value));
+});
+
+watch(index, (value) => {
+    localStorage.setItem("urlIndex", JSON.stringify(value));
+});
 </script>
 
 <template>
     <Sidebar :ects="connection" :extended="sidebar_extended" @sidebarClose="sidebar_extended = false" />
     <div class="flex">
-        <Header :urls="urls" @selectConnection="changeConnection" @sidebarOpen="sidebar_extended = true"
+        <Header :index="index" :urls="urls" @changeConnection="changeConnection" @sidebarOpen="sidebar_extended = true"
             @addConnection="addConnection" />
         <Main :ects="connection" :key="reloadCounter" />
         <Footer :ects="connection" />
