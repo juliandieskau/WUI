@@ -8,25 +8,36 @@ export class ECTS {
     private plugins: Map<ECTSPlugin, boolean> = reactive(new Map());
     private footer: Map<ECTSPlugin, Component> = reactive(new Map());
     private status: Ref<"pending" | "connected" | "error"> = ref("pending");
+    private mode: "live" | "mock" = import.meta.env.DEV ? "mock" : "live";
     private url: string;
 
     constructor(url: string) {
         this.url = url;
         this.ros = new ROSLIB.Ros({ url: url });
-        this.ros.on('connection', () => { this.status.value = "connected"; });
-        this.ros.on('error', () => { this.status.value = "error"; });
+        this.ros.on('connection', () => {
+            this.status.value = "connected";
+            this.callService("/ects/ects_status", "ECTSStatus", new ROSLIB.ServiceRequest({})).then((response) => {
+                console.log(response);
+                this.plugins.forEach((active, plugin) => {
+                    if ((response as ects_msgs.ECTSStatus_srv).plugins_loaded.includes(plugin.name)) {
+                        this.activatePlugin(plugin);
+                    } else {
+                        this.deactivatePlugin(plugin);
+                    }
+                });
+            });
+        });
+        this.ros.on('error', () => {
+            this.status.value = "error";
+            this.plugins.forEach((active, plugin) => {
+                this.activatePlugin(plugin);
+            });
+        });
         const files = import.meta.glob('../components/Plugins/**/*.ts', { eager: true });
         Object.entries(files).forEach(([path, module]) => {
-            const plugin = this.pluginFromModule(path, module);
+            const plugin = this.constructPlugin(path, module);
             if (!plugin) return;
             this.addPlugin(plugin);
-        });
-
-        this.plugins.forEach(async (active, plugin) => {
-            if (!active) return;
-            this.footer.set(plugin, markRaw(defineAsyncComponent(
-                () => import(`../components/Plugins/${plugin.name}/${plugin.name}Footer.vue`)
-                    .catch(() => { this.footer.delete(plugin); }))));
         });
     }
     getRos(): ROSLIB.Ros {
@@ -38,6 +49,9 @@ export class ECTS {
     getStatus(): Ref<"pending" | "connected" | "error"> {
         return this.status;
     }
+    getMode(): "live" | "mock" {
+        return this.mode;
+    }
     getPlugins(): Map<ECTSPlugin, boolean> {
         return this.plugins;
     }
@@ -46,12 +60,15 @@ export class ECTS {
     }
     addPlugin(plugin: ECTSPlugin) {
         console.log("add ", plugin.name);
-        this.activatePlugin(plugin);
+        this.plugins.set(plugin, false);
     }
     activatePlugin(plugin: ECTSPlugin) {
         console.log("activatePlugin", plugin.name);
         this.plugins.set(plugin, true);
         plugin.topics.forEach((messageType, topic) => this.registerListener(plugin, topic, messageType));
+        this.footer.set(plugin, markRaw(defineAsyncComponent(
+            () => import(`../components/Plugins/${plugin.name}/${plugin.name}Footer.vue`)
+                .catch(() => { this.footer.delete(plugin); }))));
     }
     deactivatePlugin(plugin: ECTSPlugin) {
         console.log("deactivatePlugin", plugin.name);
@@ -61,6 +78,12 @@ export class ECTS {
     sendMessage(topic: ROSLIB.Topic, message: ROSLIB.Message) {
         topic.publish(message);
     }
+    callService(serviceName: string, serviceType: string, request: ROSLIB.ServiceRequest): Promise<ROSLIB.ServiceResponse> {
+        const service = new ROSLIB.Service({ name: serviceName, serviceType: serviceType, ros: this.getRos() });
+        return new Promise((resolve, reject) => {
+            service.callService(request, resolve, reject);
+        });
+    }
     registerListener(plugin: ECTSPlugin, topicName: string, messageType: string) {
         const topic = new ROSLIB.Topic({ name: topicName, messageType: messageType, ros: this.getRos() });
         this.topics.get(plugin.name) ? this.topics.get(plugin.name)?.push(topic) : this.topics.set(plugin.name, [topic]);
@@ -69,7 +92,7 @@ export class ECTS {
         });
 
         /** TESTING */
-        if (import.meta.env.DEV) {
+        if (this.mode === "mock") {
             if (topicName === "test1/test") {
                 setInterval(() => {
                     if (this.plugins.get(plugin) === false) return;
@@ -163,7 +186,7 @@ export class ECTS {
     }
 
 
-    private pluginFromModule(path: string, module: any): ECTSPlugin | undefined {
+    private constructPlugin(path: string, module: any): ECTSPlugin | undefined {
         const pluginFolderRegex = /^\.\.\/components\/Plugins\/([^/]+)\/\1.ts[x]?$/;
         if (!pluginFolderRegex.test(path)) return;
         const plugin = new (module as any).default() as ECTSPlugin;

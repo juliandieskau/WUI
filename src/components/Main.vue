@@ -17,7 +17,7 @@ onMounted(async () => {
     let GLayoutRootConverted = (GLayoutRoot.value as unknown as InstanceType<typeof Glayout>);
 
     for (const [plugin, active] of props.ects.getPlugins()) {
-        if (active) plugin.init(GLayoutRootConverted, props.ects);
+        plugin.initWindows(GLayoutRootConverted, props.ects);
     }
 
     watch(() => [...props.ects.getPlugins()], (newRaw, oldRaw) => {
@@ -25,7 +25,7 @@ onMounted(async () => {
         const oldValue = new Map(oldRaw);
         const active = [...newValue].filter(([, active]) => active).map(([plugin,]) => plugin);
         active.forEach((plugin) => {
-            if (!oldValue.get(plugin)) plugin.init(GLayoutRootConverted, props.ects);
+            if (!oldValue.get(plugin)) plugin.initWindows(GLayoutRootConverted, props.ects);
         });
     });
 });
