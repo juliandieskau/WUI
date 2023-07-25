@@ -11,6 +11,8 @@ const props = defineProps({
     extended: Boolean,
     ects: { type: ECTS, required: true },
 });
+
+const emit = defineEmits(["clearLayout", "clearUrls", "sidebarClose"]);
 </script>
 
 <template>
@@ -33,6 +35,11 @@ const props = defineProps({
                 </div>
             </div>
         </div>
+        <div id="sidebar-bottom">
+            <button class="clear" @click="$emit('clearLayout')">reset layout</button>
+            <button class="clear" @click="$emit('clearUrls')">clear saved urls</button>
+            <button @click="$emit('removeConnection')">remove connection</button>
+        </div>
     </div>
 </template>
 
@@ -47,6 +54,14 @@ const props = defineProps({
     transition: left 0.3s ease-in-out;
     height: 100vh;
     width: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+#sidebar>div {
+    padding: 20px;
 }
 
 #sidebar.extended {
@@ -62,7 +77,6 @@ const props = defineProps({
     gap: 20px;
     height: 80px;
     width: 500px;
-    padding: 20px;
 }
 
 #close {
@@ -79,9 +93,25 @@ const props = defineProps({
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 20px;
-    height: calc(100vh - 80px);
-    padding: 20px;
+    gap: 8px;
+    height: calc(100vh - 160px);
+}
+
+#sidebar-bottom {
+    height: 60px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.clear {
+    background-color: transparent;
+    border: none;
+    color: var(--color-important);
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .inactive::after {

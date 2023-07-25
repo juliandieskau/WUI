@@ -1,22 +1,44 @@
 <script setup lang="ts" >
 const props = defineProps({
-    urls: { type: Array<string>, required: true }
+    urls: { type: Array<string>, required: true },
+    index: { type: Number, required: true }
 });
 
-const emits = defineEmits({
+const emit = defineEmits({
     sidebarOpen: () => true,
-    selectConnection: (url: string) => true,
-    addConnection: (url: string) => true,
+    changeConnection: (index: number) => {
+        return index >= 0;
+    },
+    addConnection: (url: string) => {
+        try {
+            let parsed = new URL(url);
+            if (parsed.protocol != "ws:") {
+                throw new Error("Invalid protocol");
+            }
+            return true;
+        } catch {
+            console.error("Invalid URL: ", url);
+            return false;
+        }
+    },
 });
 
-const connection = ref(props.urls[0]);
+const connection = computed({
+    get: () => {
+        return props.urls[props.index];
+    },
+    set: (value) => {
+        emit("changeConnection", props.urls.indexOf(value));
+    }
+});
 const expanded = ref(false);
 const url = ref("");
 
 import MaterialSymbolsMenu from '~icons/material-symbols/menu';
 import MaterialSymbolsAddCircle from '~icons/material-symbols/add-circle';
 import IcRoundCheck from '~icons/ic/round-check';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+
 
 </script>
 
@@ -25,8 +47,7 @@ import { ref } from 'vue';
         <button title="Menu" id="sidebar-btn" @click="$emit('sidebarOpen')" type="button">
             <material-symbols-menu style="font-size: 2em;" />
         </button>
-        <select id="select-robot" v-model="connection" @change="$emit('selectConnection', connection)"
-            title="select connection">
+        <select id="select-robot" v-model="connection" title="select connection" placeholder="add robot">
             <option v-for="url in urls" :key="url">
                 {{ url }}
             </option>
@@ -110,14 +131,14 @@ option {
 .add-robot input {
     border: none;
     border-radius: 8px 0 0 8px;
-    color: var(--text-color);
     font-size: 1em;
     align-self: stretch;
+    background-color: var(--color-background-mute);
+    color: var(--text-color);
 }
 
 .add-robot button {
     border-radius: 0 8px 8px 0;
-    color: var(--text-color);
     border: 1px solid white;
 }
 </style>
