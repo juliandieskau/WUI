@@ -137,11 +137,11 @@ export class ECTS {
                     ]
                 };
                 let iteration = 0;
-                setInterval(() => {
+                setTimeout(() => {
                     if (this.plugins.get(plugin) === false) return;
                     waypoints.name = 'list' + iteration++;
                     plugin.update("/ects/waypoints/waypoint_list", waypoints);
-                }, 5000);
+                }, 1500);
             }
         }
     }
