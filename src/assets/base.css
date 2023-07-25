@@ -11,6 +11,8 @@
   --vt-c-text-dark-2: rgb(221, 221, 221);
 
   --color-important: red;
+  --color-success: green;
+  --color-warning: orange;
 }
 
 /* semantic color variables for this project */

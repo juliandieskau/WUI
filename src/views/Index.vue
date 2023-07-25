@@ -70,6 +70,14 @@ watch(index, (value) => {
         <Main :ects="connection" :key="reloadCounter" />
         <Footer :ects="connection" />
     </div>
+    <div class="mode" :class="[connection.getStatus().value, connection.getMode()]">
+        <div v-if="connection.getMode() == 'mock'">
+            {{ connection.getStatus().value == 'error' ? 'MOCK' : connection.getStatus().value.toUpperCase() }}
+        </div>
+        <div v-else>
+            {{ connection.getStatus().value.toUpperCase() }}
+        </div>
+    </div>
     <div v-if="connection.getStatus().value == 'pending'" class="loading"></div>
 </template>
 
@@ -82,5 +90,38 @@ watch(index, (value) => {
 
 .grid>* {
     align-self: stretch;
+}
+
+.mode {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 10000;
+    padding: 0 5px;
+    background-color: var(--color-background-soft);
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.pending {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+.mock.error {
+    color: var(--color-warning);
+}
+
+.error {
+    color: var(--color-important);
+}
+
+.connected {
+    color: var(--color-success);
 }
 </style>

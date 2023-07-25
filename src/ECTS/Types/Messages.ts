@@ -9,6 +9,12 @@ export namespace std_msgs {
 }
 
 export namespace ects_msgs {
+    export type ECTSStatus_srv = {
+        version: string,
+        plugins_loaded: string[],
+        robot_name: string,
+    }
+
     export type Aggregation = {
         ectsname: string,
         type: typeof Aggregation.Type,
