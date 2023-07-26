@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="props.refs.get('#control-active')" style="color: green">
+        <div v-if="props.refs.get('#control-active') == 'gamepad'" style="color: green">
             <GgController />
         </div>
         <div v-else>
