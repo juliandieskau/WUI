@@ -72,7 +72,7 @@ watch(index, (value) => {
     </div>
     <div class="mode" :class="[connection.getStatus().value, connection.getMode()]">
         <div v-if="connection.getMode() == 'mock'">
-            {{ connection.getStatus().value == 'error' ? 'MOCK' : connection.getStatus().value.toUpperCase() }}
+            {{ connection.getStatus().value == 'error' ? 'MOCK' : connection.getStatus().value.toUpperCase() + " (DEV)" }}
         </div>
         <div v-else>
             {{ connection.getStatus().value.toUpperCase() }}

@@ -142,8 +142,8 @@ export namespace geometry_msgs {
     }
 
     export type Twist = {
-        linear: number[],
-        angular: number[],
+        linear: { x: number, y: number, z: number },
+        angular: { x: number, y: number, z: number }
     }
 
     export type TwistWithCovariance = {

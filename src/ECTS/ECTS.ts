@@ -12,6 +12,7 @@ export class ECTS {
     private url: string;
 
     constructor(url: string) {
+        console.log("ECTS constructor");
         this.url = url;
         this.ros = new ROSLIB.Ros({ url: url });
         this.ros.on('connection', () => {
@@ -189,7 +190,7 @@ export class ECTS {
     private constructPlugin(path: string, module: any): ECTSPlugin | undefined {
         const pluginFolderRegex = /^\.\.\/components\/Plugins\/([^/]+)\/\1.ts[x]?$/;
         if (!pluginFolderRegex.test(path)) return;
-        const plugin = new (module as any).default() as ECTSPlugin;
+        const plugin = new (module as any).default(this) as ECTSPlugin;
         plugin.path = path;
         return plugin;
     }
