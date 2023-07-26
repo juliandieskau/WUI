@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onUnmounted, ref, watch, watchEffect } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import Glayout from '@/components/Glayout.vue';
 import { onMounted } from 'vue';
 import { ECTS } from '@/ECTS/ECTS';

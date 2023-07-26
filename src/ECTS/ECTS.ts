@@ -18,7 +18,7 @@ export class ECTS {
             this.status.value = "connected";
             this.callService("/ects/ects_status", "ECTSStatus", new ROSLIB.ServiceRequest({})).then((response) => {
                 console.log(response);
-                this.plugins.forEach((active, plugin) => {
+                this.plugins.forEach((_, plugin) => {
                     if ((response as ects_msgs.ECTSStatus_srv).plugins_loaded.includes(plugin.name)) {
                         this.activatePlugin(plugin);
                     } else {
@@ -29,7 +29,7 @@ export class ECTS {
         });
         this.ros.on('error', () => {
             this.status.value = "error";
-            this.plugins.forEach((active, plugin) => {
+            this.plugins.forEach((_, plugin) => {
                 this.activatePlugin(plugin);
             });
         });
