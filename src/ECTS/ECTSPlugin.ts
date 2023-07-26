@@ -19,12 +19,13 @@ export abstract class ECTSPlugin {
         this.data = reactive(new Map());
         if (options?.componentNames) this.componentNames = options.componentNames;
     }
-    initWindows(glayout: InstanceType<typeof Glayout>, ects: ECTS): void {
+    initWindows(glayout: InstanceType<typeof Glayout>, ects: ECTS, active: boolean): void {
         console.log(`init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t)`);
         this.componentNames.forEach(async (componentName) => {
             const absolutePath = `../components/Plugins/${this.name}/${componentName}`;
             try {
-                await glayout.addGLComponentWithRef(this, absolutePath);
+                if (active) await glayout.addGLComponentWithRef(this, absolutePath);
+                else glayout.addRefWithoutComponent(this, absolutePath);
             }
             catch (e) {
                 if (e instanceof ComponentExistsError) {
