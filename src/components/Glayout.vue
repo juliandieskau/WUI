@@ -70,9 +70,13 @@ const loadLayout = () => {
 	loadGLLayout(layout);
 };
 
-const addGLComponentWithRef = async (plugin: ECTSPlugin, path: string) => {
+const addRefWithoutComponent = (plugin: ECTSPlugin, path: string) => {
 	let ref: Map<string, any> = plugin.data;
 	Refs.value.set(path, ref);
+};
+
+const addGLComponentWithRef = async (plugin: ECTSPlugin, path: string) => {
+	addRefWithoutComponent(plugin, path);
 	let index = await addGLComponent(path, plugin.humanName);
 	if (index == null) throw new ComponentExistsError("Component already exists");
 };
@@ -331,6 +335,7 @@ onMounted(() => {
 
 defineExpose({
 	addGLComponentWithRef,
+	addRefWithoutComponent,
 	addGLComponent,
 });
 
