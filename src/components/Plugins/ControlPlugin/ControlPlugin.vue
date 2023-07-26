@@ -1,10 +1,30 @@
 <template>
-    <button @mousedown="Control.startDirection('forward')" @mouseup="Control.stopDirection('forward')">forward</button>
-    <button @mousedown="Control.startDirection('backward')" @mouseup="Control.stopDirection('backward')">backward</button>
-    <button @mousedown="Control.startDirection('left')" @mouseup="Control.stopDirection('left')">left</button>
-    <button @mousedown="Control.startDirection('right')" @mouseup="Control.stopDirection('right')">right</button>
-    <button @mousedown="Control.startDirection('tleft')" @mouseup="Control.stopDirection('tleft')">turn left</button>
-    <button @mousedown="Control.startDirection('tright')" @mouseup="Control.stopDirection('tright')">turn right</button>
+    <div class="controls">
+        <button @mousedown="Control.startDirection('tleft')" @mouseup="Control.stopDirection('tleft')"
+            @mouseleave="Control.stopDirection('tleft')">
+            <MaterialSymbolsRotateLeft />
+        </button>
+        <button @mousedown="Control.startDirection('forward')" @mouseup="Control.stopDirection('forward')"
+            @mouseleave="Control.stopDirection('forward')">
+            <MaterialSymbolsArrowUpwardAlt />
+        </button>
+        <button @mousedown="Control.startDirection('tright')" @mouseup="Control.stopDirection('tright')"
+            @mouseleave="Control.stopDirection('tright')">
+            <MaterialSymbolsRotateRight />
+        </button>
+        <button @mousedown="Control.startDirection('left')" @mouseup="Control.stopDirection('left')"
+            @mouseleave="Control.stopDirection('left')">
+            <MaterialSymbolsArrowLeftAlt />
+        </button>
+        <button @mousedown="Control.startDirection('backward')" @mouseup="Control.stopDirection('backward')"
+            @mouseleave="Control.stopDirection('backward')">
+            <MaterialSymbolsArrowDownwardAlt />
+        </button>
+        <button @mousedown="Control.startDirection('right')" @mouseup="Control.stopDirection('right')"
+            @mouseleave="Control.stopDirection('right')">
+            <MaterialSymbolsArrowRightAlt />
+        </button>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -12,6 +32,14 @@
 import { ECTS } from '../../../ECTS/ECTS';
 import { geometry_msgs } from '../../../ECTS/Types/Messages';
 import ROSLIB from 'roslib';
+
+import MaterialSymbolsRotateLeft from '~icons/material-symbols/rotate-left';
+import MaterialSymbolsRotateRight from '~icons/material-symbols/rotate-right';
+import MaterialSymbolsArrowLeftAlt from '~icons/material-symbols/arrow-left-alt';
+import MaterialSymbolsArrowRightAlt from '~icons/material-symbols/arrow-right-alt';
+import MaterialSymbolsArrowUpwardAlt from '~icons/material-symbols/arrow-upward-alt';
+import MaterialSymbolsArrowDownwardAlt from '~icons/material-symbols/arrow-downward-alt';
+
 
 const CONTROL_TOPIC = "/turtle1/cmd_vel";
 
@@ -109,4 +137,20 @@ class Control {
 
 </script>
 
-<style scoped></style>
+<style scoped>
+.controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 0.1rem;
+    width: 100%;
+    height: 100%;
+}
+
+.controls button svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--color-text);
+    transition: fill 0.2s;
+}
+</style>
