@@ -1,4 +1,5 @@
 import { ServiceResponse } from "roslib";
+import export_default from "unplugin-icons/dist/nuxt.js";
 
 export namespace std_msgs {
     export type Float32 = {
@@ -11,6 +12,11 @@ export namespace std_msgs {
 }
 
 export namespace ects_msgs {
+    export type ForceRetrasmit = {
+        reload_all: boolean,
+        topic: string,
+    }
+
     export type ECTSStatus_srv = {
         version: string,
         plugins_loaded: string[],
@@ -51,9 +57,19 @@ export namespace ects_msgs {
         name: string,
     }
 
+    export type ReplaceWaypoint = {
+        index_to_replace: number,
+        replacement_waypoint: Waypoint,
+    }
+
     export type WaypointList = {
         name: string,
         waypoints: ects_msgs.Waypoint[],
+    }
+    export type WaypointListDirectory = {
+        filenames: string[],
+        success: boolean,
+        error_message: string,
     }
 
 }

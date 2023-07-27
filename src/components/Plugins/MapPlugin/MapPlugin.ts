@@ -7,8 +7,13 @@ export default class MapPlugin extends ECTSPlugin {
             componentNames: ["MapPlugin"],
             topics: new Map([
                 ["/ects/control/position", "nav_msgs/Odometry"],
-                ["/ects/waypoints/waypoint_list", "WaypointList"],
+                ["/ects/waypoints/waypoint_list", "ects/WaypointList"],
                 ["/ects/waypoints/current_waypoint", "std_msgs/UInt32"]])
         });
+        this.data.set("#ects", this.ects);
+    }
+    update(topic: string, message: any): void {
+        console.log("MapPlugin.update", topic, message);
+        super.update(topic, message);
     }
 }
