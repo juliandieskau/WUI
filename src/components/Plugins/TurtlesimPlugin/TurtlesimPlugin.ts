@@ -1,3 +1,4 @@
+import { ECTS } from "@/ECTS/ECTS";
 import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
 import { geometry_msgs } from "@/ECTS/Types/Messages";
 
@@ -9,8 +10,8 @@ export type TurtlesimPose = geometry_msgs.Pose2D & {
 }
 
 export default class TurtlesimPlugin extends ECTSPlugin {
-    constructor() {
-        super("TurtlesimPlugin", "Turtlesim", {
+    constructor(ects: ECTS) {
+        super("TurtlesimPlugin", "Turtlesim", ects, {
             componentNames: ["TurtlesimPlugin"],
             topics: new Map([["turtle1/pose", "turtlesim/Pose"]]),
         });

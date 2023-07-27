@@ -1,8 +1,9 @@
+import { ECTS } from "@/ECTS/ECTS";
 import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
 
 export default class MapPlugin extends ECTSPlugin {
-    constructor() {
-        super("MapPlugin", "Map", {
+    constructor(ects: ECTS) {
+        super("waypoints", "Map", ects, {
             componentNames: ["MapPlugin"],
             topics: new Map([
                 ["/ects/control/position", "nav_msgs/Odometry"],
@@ -10,5 +11,4 @@ export default class MapPlugin extends ECTSPlugin {
                 ["/ects/waypoints/current_waypoint", "std_msgs/UInt32"]])
         });
     }
-
 }

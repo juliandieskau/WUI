@@ -4,6 +4,8 @@ import type { ECTSPlugin } from './ECTSPlugin';
 import { ects_msgs, geometry_msgs, sensor_msgs, std_msgs } from './Types/Messages';
 export class ECTS {
     private ros: ROSLIB.Ros;
+    private name: Ref<string> = ref("ECTS");
+    private version: Ref<string> = ref("0.0.0");
     private topics: Map<string, ROSLIB.Topic[]> = new Map();
     private plugins: Map<ECTSPlugin, boolean> = reactive(new Map());
     private footer: Map<ECTSPlugin, Component> = reactive(new Map());
@@ -12,14 +14,19 @@ export class ECTS {
     private url: string;
 
     constructor(url: string) {
+        console.log("ECTS constructor");
         this.url = url;
         this.ros = new ROSLIB.Ros({ url: url });
         this.ros.on('connection', () => {
             this.status.value = "connected";
+            this.mode = "live";
             this.callService("/ects/ects_status", "ECTSStatus", new ROSLIB.ServiceRequest({})).then((response) => {
-                console.log(response);
+                const responseCast = response as ects_msgs.ECTSStatus_srv;
+                console.log(responseCast);
+                this.name.value = responseCast.robot_name;
+                this.version.value = responseCast.version;
                 this.plugins.forEach((_, plugin) => {
-                    if ((response as ects_msgs.ECTSStatus_srv).plugins_loaded.includes(plugin.name)) {
+                    if ((responseCast).plugins_loaded.includes(plugin.name)) {
                         this.activatePlugin(plugin);
                     } else {
                         this.deactivatePlugin(plugin);
@@ -46,6 +53,12 @@ export class ECTS {
     getUrl(): string {
         return this.url;
     }
+    getName(): Ref<string> {
+        return this.name;
+    }
+    getVersion(): Ref<string> {
+        return this.version;
+    }
     getStatus(): Ref<"pending" | "connected" | "error"> {
         return this.status;
     }
@@ -66,8 +79,11 @@ export class ECTS {
         console.log("activatePlugin", plugin.name);
         this.plugins.set(plugin, true);
         plugin.topics.forEach((messageType, topic) => this.registerListener(plugin, topic, messageType));
+        const path = plugin.path.split('/');
+        path.pop();
+        const pathString = `${path.join('/')}/${path[path.length - 1]}Footer.vue`;
         this.footer.set(plugin, markRaw(defineAsyncComponent(
-            () => import(`../components/Plugins/${plugin.name}/${plugin.name}Footer.vue`)
+            () => import(pathString)
                 .catch(() => { this.footer.delete(plugin); }))));
     }
     deactivatePlugin(plugin: ECTSPlugin) {
@@ -90,7 +106,6 @@ export class ECTS {
         topic.subscribe((message: ROSLIB.Message) => {
             plugin.update(topicName, message);
         });
-
         /** TESTING */
         if (this.mode === "mock") {
             if (topicName === "test1/test") {
@@ -189,7 +204,7 @@ export class ECTS {
     private constructPlugin(path: string, module: any): ECTSPlugin | undefined {
         const pluginFolderRegex = /^\.\.\/components\/Plugins\/([^/]+)\/\1.ts[x]?$/;
         if (!pluginFolderRegex.test(path)) return;
-        const plugin = new (module as any).default() as ECTSPlugin;
+        const plugin = new (module as any).default(this) as ECTSPlugin;
         plugin.path = path;
         return plugin;
     }

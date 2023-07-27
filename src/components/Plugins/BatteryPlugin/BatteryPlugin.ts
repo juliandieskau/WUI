@@ -1,12 +1,10 @@
 import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
 import { Message } from "roslib";
-import { sensor_msgs, std_msgs } from "@/ECTS/Types/Messages";
+import { ECTS } from "@/ECTS/ECTS";
 
 export default class BatteryPlugin extends ECTSPlugin {
-    private iteration: number = 0;
-
-    constructor() {
-        super("BatteryPlugin", "Battery Plugin",
+    constructor(ects: ECTS) {
+        super("battery", "Battery Plugin", ects,
             {
                 componentNames: ["BatteryPlugin"],
                 topics: new Map<string, string>([
@@ -15,7 +13,4 @@ export default class BatteryPlugin extends ECTSPlugin {
                     ["/ects/battery/estimated_time_remaining", "std_msgs/Float32"]]),
             });
     }
-    update(topic: string, message: Message) {
-        super.update(topic, message);
-    };
 }

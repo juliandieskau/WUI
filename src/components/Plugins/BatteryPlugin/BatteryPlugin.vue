@@ -6,17 +6,17 @@
         </div>
         <div v-if="props.refs.get('/ects/battery/usage').percentage" class="item"
             :style="props.refs.get('/ects/battery/is_critical')?.data ? { color: 'var(--color-important)' } : {}">
-            <material-symbols-battery20-rounded v-if="props.refs.get('/ects/battery/usage').percentage > 0.95" />
-            <material-symbols-battery6-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.8" />
-            <material-symbols-battery5-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.65" />
-            <material-symbols-battery4-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.5" />
-            <material-symbols-battery3-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.35" />
-            <material-symbols-battery2-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.2" />
-            <material-symbols-battery1-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.05" />
+            <material-symbols-battery20-rounded v-if="props.refs.get('/ects/battery/usage').percentage > 95" />
+            <material-symbols-battery6-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 80" />
+            <material-symbols-battery5-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 65" />
+            <material-symbols-battery4-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 50" />
+            <material-symbols-battery3-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 35" />
+            <material-symbols-battery2-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 20" />
+            <material-symbols-battery1-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 5" />
             <material-symbols-battery0-bar-rounded v-else />
-            <span>{{ (props.refs.get('/ects/battery/usage').percentage * 100).toFixed(1) }}% </span>
+            <span>{{ props.refs.get('/ects/battery/usage').percentage }}% </span>
             <span v-if="props.refs.get('/ects/battery/estimated_time_remaining')">
-                ({{ props.refs.get("/ects/battery/estimated_time_remaining").data }} min)
+                ({{ ((props.refs.get("/ects/battery/estimated_time_remaining").data) / 60).toFixed(1) }} min)
             </span>
         </div>
         <div v-else>
@@ -25,20 +25,20 @@
 
         <div v-if="props.refs.get('/ects/battery/usage').voltage" class="item">
             <material-symbols-electric-bolt-rounded />
-            <span>{{ props.refs.get('/ects/battery/usage').voltage }}V</span>
+            <span>{{ props.refs.get('/ects/battery/usage').voltage.toFixed(2) }}V</span>
         </div>
 
         <div v-if="props.refs.get('/ects/battery/usage').current" class="item">
             <material-symbols-power-input-rounded />
-            <span>{{ props.refs.get('/ects/battery/usage').current }}A</span>
+            <span>{{ props.refs.get('/ects/battery/usage').current.toFixed(2) }}A</span>
         </div>
 
         <div v-if="props.refs.get('/ects/battery/usage').charge" class="item">
             <material-symbols-battery-change-outline-rounded />
-            <span>{{ props.refs.get('/ects/battery/usage').charge }}Ah</span>
+            <span>{{ props.refs.get('/ects/battery/usage').charge.toFixed(2) }}Ah</span>
         </div>
 
-        <div v-for="[key, value] in Object.entries(props.refs.get('/ects/battery/usage')).filter(([key, value]) => key != 'percentage' && key != 'voltage' && key != 'current' && key != 'charge' && key != 'power_supply_status')"
+        <div v-for="[key, value] in Object.entries(props.refs.get('/ects/battery/usage')).filter(([key, value]) => key != 'percentage' && key != 'voltage' && key != 'current' && key != 'charge' && key != 'power_supply_status' && key != 'header')"
             :key="key" class="details">
             <span>{{ key }}:</span>
             <span>{{ value }}</span>

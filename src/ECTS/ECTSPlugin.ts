@@ -11,18 +11,22 @@ export abstract class ECTSPlugin {
     topics: Map<string, string> = new Map();
     data: Map<string, ROSLIB.Message> = reactive(new Map<string, ROSLIB.Message>());
     componentNames: string[] = [];
+    ects: ECTS;
 
-    constructor(name: string, humanName: string, options?: { topics?: Map<string, string>, footerTopics?: Map<string, string>, componentNames?: string[] }) {
+    constructor(name: string, humanName: string, ects: ECTS, options?: { topics?: Map<string, string>, footerTopics?: Map<string, string>, componentNames?: string[] }) {
+        this.ects = ects;
         this.name = name;
         this.humanName = humanName;
         if (options?.topics) this.topics = options.topics;
         this.data = reactive(new Map());
         if (options?.componentNames) this.componentNames = options.componentNames;
     }
-    initWindows(glayout: InstanceType<typeof Glayout>, ects: ECTS, active: boolean): void {
-        console.log(`init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t)`);
+    initWindows(glayout: InstanceType<typeof Glayout>, active: boolean): void {
+        console.log(`init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t) ${active ? "active" : "inactive"}`);
         this.componentNames.forEach(async (componentName) => {
-            const absolutePath = `../components/Plugins/${this.name}/${componentName}`;
+            const path = this.path.split('/');
+            path.pop();
+            const absolutePath = `${path.join('/')}/${componentName}`;
             try {
                 if (active) await glayout.addGLComponentWithRef(this, absolutePath);
                 else glayout.addRefWithoutComponent(this, absolutePath);
