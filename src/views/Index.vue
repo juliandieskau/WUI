@@ -76,7 +76,10 @@ watch(index, (value) => {
         </div>
         <div v-else>
             {{ connection.getStatus().value.toUpperCase() }}
+            <span style="text-decoration: underline;">{{ connection.getName().value.toUpperCase() }} </span>
+            {{ connection.getVersion() }}
         </div>
+
     </div>
     <div v-if="connection.getStatus().value == 'pending'" class="loading"></div>
 </template>

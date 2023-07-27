@@ -1,3 +1,5 @@
+import { ServiceResponse } from "roslib";
+
 export namespace std_msgs {
     export type Float32 = {
         data: number;

@@ -4,18 +4,18 @@
             <material-symbols-power-plug-outline-rounded style="color: green; font-size: 1.5em" />
         </div>
         <div v-if="props.refs.get('/ects/battery/usage').percentage"
-            :style="props.refs.get('/ects/battery/is_critical').data ? { color: 'var(--color-important) !important' } : {}">
-            <material-symbols-battery20-rounded v-if="props.refs.get('/ects/battery/usage').percentage > 0.95" />
-            <material-symbols-battery6-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.8" />
-            <material-symbols-battery5-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.65" />
-            <material-symbols-battery4-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.5" />
-            <material-symbols-battery3-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.35" />
-            <material-symbols-battery2-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.2" />
-            <material-symbols-battery1-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 0.05" />
+            :style="props.refs.get('/ects/battery/is_critical')?.data ? { color: 'var(--color-important) !important' } : {}">
+            <material-symbols-battery20-rounded v-if="props.refs.get('/ects/battery/usage').percentage > 95" />
+            <material-symbols-battery6-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 80" />
+            <material-symbols-battery5-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 65" />
+            <material-symbols-battery4-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 50" />
+            <material-symbols-battery3-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 35" />
+            <material-symbols-battery2-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 20" />
+            <material-symbols-battery1-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 5" />
             <material-symbols-battery0-bar-rounded v-else />
-            {{ (props.refs.get('/ects/battery/usage').percentage * 100).toFixed(1) }}%
-            <span v-if="props.refs.get('/ects/battery/estimated_time_remaining')"> ({{
-                props.refs.get('/ects/battery/estimated_time_remaining').data }} min) </span>
+            {{ props.refs.get('/ects/battery/usage').percentage }}%
+            <span v-if="props.refs.get('/ects/battery/estimated_time_remaining')">
+                ({{ ((props.refs.get("/ects/battery/estimated_time_remaining").data) / 60).toFixed(1) }} min) </span>
         </div>
         <div v-else>
             <material-symbols-battery-unknown-rounded />
@@ -40,6 +40,7 @@ import MaterialSymbolsPowerPlugOutlineRounded from '~icons/material-symbols/powe
 const props = defineProps({
     refs: { type: Map<string, any>, required: true, default: () => { } }
 });
+
 </script>
 
 <style scoped></style>

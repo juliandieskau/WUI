@@ -22,9 +22,11 @@ export abstract class ECTSPlugin {
         if (options?.componentNames) this.componentNames = options.componentNames;
     }
     initWindows(glayout: InstanceType<typeof Glayout>, active: boolean): void {
-        console.log(`init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t)`);
+        console.log(`init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t) ${active ? "active" : "inactive"}`);
         this.componentNames.forEach(async (componentName) => {
-            const absolutePath = `../components/Plugins/${this.name}/${componentName}`;
+            const path = this.path.split('/');
+            path.pop();
+            const absolutePath = `${path.join('/')}/${componentName}`;
             try {
                 if (active) await glayout.addGLComponentWithRef(this, absolutePath);
                 else glayout.addRefWithoutComponent(this, absolutePath);
