@@ -105,10 +105,8 @@ export class ECTS {
     registerListener(plugin: ECTSPlugin, topicName: string, messageType: string) {
         const topic = new ROSLIB.Topic({ name: topicName, messageType: messageType, ros: this.getRos() });
         this.topics.get(plugin.name) ? this.topics.get(plugin.name)?.push(topic) : this.topics.set(plugin.name, [topic]);
-        console.log("subscribe", topicName, messageType);
         topic.subscribe((message: ROSLIB.Message) => {
             plugin.update(topicName, message);
-            console.log("update", topicName, message);
         });
         /** TESTING */
         if (this.mode === "mock") {

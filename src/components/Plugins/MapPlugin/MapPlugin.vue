@@ -3,10 +3,21 @@
         <l-map ref="map" v-model:zoom="zoom" v-model:center="center">
             <l-control position="topleft">
                 <button @click="centerViewOnRobot()" title="center view">📌</button>
-                <select @change="() => loadWaypointList(selectedFilename)" v-model="selectedFilename">
+            </l-control>
+            <l-control position="topright">
+                <select v-model="selectedFilename">
+                    <option></option>
                     <option v-for="filename in waypointLists" :key="filename" :value="filename">{{ filename }}
                     </option>
                 </select>
+                <button v-if="selectedFilename" @click="loadWaypointList(selectedFilename)">Load selected</button>
+                <button v-if="selectedFilename" @click="saveWaypointList(selectedFilename)">Save selected</button>
+                <button v-if="!selectedFilename" @click="promptWaypointListName()">new list</button>
+            </l-control>
+            <l-control position="bottomright">
+                <button @click="addWaypointMiddle" title="add waypoint">
+                    <SolarMapPointAddLinear style="font-size: 2em; color: rgb(0, 147, 233)" />
+                </button>
             </l-control>
             <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base"
                 name="OpenStreetMap"></l-tile-layer>
@@ -25,8 +36,35 @@
                     @dragend="event => moveWaypoint(event, index)">
                     <l-tooltip>
                         {{ waypoint.name }} ({{ index }})<br />
-                        radius: {{ waypoint.radius }}<br />
+                        radius: {{ waypoint.radius.toFixed(2) }}<br />
                     </l-tooltip>
+                    <l-popup class="popup">
+                        #{{ index }}:
+                        <form>
+                            <div>
+                                <label>Name</label>
+                                <input v-model="waypoint.name" />
+                            </div>
+                            <div>
+                                <label>Radius</label>
+                                <input v-model="waypoint.radius" type="number" />
+                            </div>
+                            <div>
+                                <label>wait time</label>
+                                <input v-model="waypoint.wait_time" type="number" />
+                            </div>
+                            <div>
+                                <label>use-heading</label>
+                                <input v-model="waypoint.use_heading" type="checkbox" />
+                            </div>
+                            <div>
+                                <label>heading-accurracy</label>
+                                <input v-model="waypoint.heading_accuracy" type="number" />
+                            </div>
+                            <button type="submit" @click.prevent="() => editWaypoint(index, waypoint)">save</button>
+                        </form>
+                        <button type="button" @click.prevent="() => removeWaypoint(index)" class="delete">delete</button>
+                    </l-popup>
                 </l-marker>
             </template>
         </l-map>
@@ -35,10 +73,11 @@
   
 <script setup lang="ts">
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LControl, LMarker, LIcon, LPolyline, LTooltip } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LControl, LMarker, LIcon, LPolyline, LTooltip, LPopup } from "@vue-leaflet/vue-leaflet";
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from "vue";
-import { DragEndEvent, type PointTuple } from "leaflet";
+import { DragEndEvent, LatLng, Point, PointExpression, type PointTuple } from "leaflet";
 
+import SolarMapPointAddLinear from '~icons/solar/map-point-add-linear';
 import MdiDog from '~icons/mdi/dog';
 import { ects_msgs, geometry_msgs } from "@/ECTS/Types/Messages";
 import { ECTS } from "@/ECTS/ECTS";
@@ -52,22 +91,28 @@ const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 const ects = computed(() => props.refs.get('#ects') as ECTS);
 const waypointLists = ref<string[]>([]);
 const selectedFilename = ref('');
-const waypointList = computed(() => {
-    const list = props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
-    return list;
+const waypointList = computed({
+    get() {
+        const list = props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
+        return list;
+    },
+    set(newValue) {
+        props.refs.set('/ects/waypoints/waypoint_list', newValue);
+    },
 });
 
-watch(waypointList, (value) => {
-    if (value) {
-        selectedFilename.value = value.name;
-    }
-});
+const loadWaypointListDir = () => {
+    ects.value.callService('/ects/waypoints/saved_lists', 'ects/WaypointListDirectory', new ROSLIB.ServiceRequest({})).then((response) => {
+        const responseCast = response as ects_msgs.WaypointListDirectory;
+        waypointLists.value = responseCast.filenames;
+    });
+};
 
-ects.value.callService('/ects/waypoints/saved_lists', 'ects/WaypointListDirectory', new ROSLIB.ServiceRequest({})).then((response) => {
-    const responseCast = response as ects_msgs.WaypointListDirectory;
-    waypointLists.value = responseCast.filenames;
-});
+loadWaypointListDir();
 
+watch(() => props.refs.get('/ects/waypoints/waypoint_list'), (value, oldValue) => {
+    console.log("received list update", value);
+});
 
 const props = defineProps({
     refs: { type: Object, required: true, default: () => { } }
@@ -78,24 +123,72 @@ const position = computed(() => {
     return [pos.x, pos.y] as PointTuple;
 });
 
+
 const loadWaypointList = (name: string) => {
-    ects.value.callService('/ects/waypoints/load_waypoint_list', 'ects/LoadWaypointList', new ROSLIB.ServiceRequest({
+    return ects.value.callService('/ects/waypoints/load_waypoint_list', 'ects/LoadWaypointList', new ROSLIB.ServiceRequest({
         filename: name
     }));
 };
 
+const saveWaypointList = (name: string) => {
+    return ects.value.callService('/ects/waypoints/save_waypoint_list', 'ects/SaveWaypointList', new ROSLIB.ServiceRequest({
+        filename: name
+    }));
+};
+
+const promptWaypointListName = () => {
+    let name = prompt("Please enter a name for the new waypoint list", "");
+    if (name) {
+        saveWaypointList(name).then(() => {
+            loadWaypointListDir();
+        });
+    }
+};
+
+const addWaypointMiddle = () => {
+    console.log("add waypoint", waypointList.value.waypoints.length);
+    const ects: ECTS = props.refs.get('#ects');
+    console.log("add waypoint", center.value);
+    ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/add_waypoint', messageType: "ects/AddWaypoint", }), new ROSLIB.Message({
+        waypoint: {
+            name: "new waypoint",
+            pose: {
+                x: (center.value as unknown as LatLng).lat,
+                y: (center.value as unknown as LatLng).lng,
+                theta: 0
+            },
+            radius: 1
+        },
+        index: waypointList.value.waypoints.length
+    } as ects_msgs.AddWaypoint));
+};
+
 const moveWaypoint = (event: DragEndEvent, index: number) => {
-    let waypoint = waypointList.value.waypoints[index];
+    console.log("move waypoint", index);
+    const waypoint = waypointList.value.waypoints[index];
     waypoint.pose.x = event.target.getLatLng().lat;
     waypoint.pose.y = event.target.getLatLng().lng;
-    waypointList.value.waypoints[index] = waypoint;
-    props.refs.set('/ects/waypoints/waypoint_list', waypointList);
+    const newList = waypointList.value;
+    newList.waypoints[index] = waypoint;
+    waypointList.value = newList;
+    editWaypoint(index, waypoint);
+};
+
+const editWaypoint = (index: number, waypoint: ects_msgs.Waypoint) => {
+    console.log("send replace waypoint", index, waypoint);
     const ects: ECTS = props.refs.get('#ects');
-    console.log(index, waypoint.pose.x, waypoint.pose.y);
     ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/replace_waypoint', messageType: "ects/ReplaceWaypoint", }), new ROSLIB.Message({
         index_to_replace: index,
         replacement_waypoint: waypoint
     } as ects_msgs.ReplaceWaypoint));
+};
+
+const removeWaypoint = (index: number) => {
+    console.log("send remove waypoint", index);
+    const ects: ECTS = props.refs.get('#ects');
+    ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/remove_waypoint', messageType: "ects/ReplaceWaypoint", }), new ROSLIB.Message({
+        index: index,
+    } as ects_msgs.RemoveWaypoint));
 };
 
 watch(() => props.refs.get('/ects/control/position'), (value, oldValue) => {
@@ -143,5 +236,33 @@ onUnmounted(() => {
 :global(.leaflet-div-icon) {
     background: transparent;
     border: 0;
+}
+
+
+.popup>form {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    align-items: stretch;
+    justify-items: center;
+}
+
+.popup>form>div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.popup>form>div>input {
+    width: 50%;
+}
+
+.popup-form>div>input[type=checkbox] {
+    width: auto;
+}
+
+button.delete {
+    color: var(--color-important);
 }
 </style>

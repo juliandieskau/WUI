@@ -53,8 +53,35 @@ export namespace ects_msgs {
         available: number,
     }
 
-    export type Waypoint = iosb_nav_msgs.Waypoint & {
+    export type Position2d = {
+        x: number,
+        y: number,
+        radius: number,
+    }
+
+    export type Heading = {
+        heading: number,
+        accuracy: number,
+    }
+
+    export type WaypointBUG = {
         name: string,
+        position: Position2d,
+        heading: Heading,
+        wait_time: number,
+    }
+
+    export type Waypoint = iosb_nav_msgs.Waypoint & {
+        name: string
+    }
+
+    export type AddWaypoint = {
+        waypoint: Waypoint,
+        index: number,
+    }
+
+    export type RemoveWaypoint = {
+        index: number,
     }
 
     export type ReplaceWaypoint = {
