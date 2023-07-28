@@ -4,6 +4,7 @@
             <CodiconActivateBreakpoints />
             <span>
                 {{ (props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList).name }}
+                [{{ (props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList).waypoints.length }}]
             </span>
         </div>
     </div>

@@ -32,6 +32,8 @@ export class ECTS {
                         this.deactivatePlugin(plugin);
                     }
                 });
+                console.log("retransmit:");
+                this.sendMessage(new ROSLIB.Topic({ name: "/ects/retransmit", messageType: "ects/ForceRetransmit", ros: this.ros }), { reload_all: true, topic: "" } as ects_msgs.ForceRetrasmit);
             });
         });
         this.ros.on('error', () => {
