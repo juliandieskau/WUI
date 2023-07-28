@@ -258,7 +258,7 @@ onUnmounted(() => {
     width: 50%;
 }
 
-.popup-form>div>input[type=checkbox] {
+.popup>form>div>input[type=checkbox] {
     width: auto;
 }
 
