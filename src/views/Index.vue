@@ -77,7 +77,7 @@ watch(index, (value) => {
         <div v-else>
             {{ connection.getStatus().value.toUpperCase() }}
             <span style="text-decoration: underline;">{{ connection.getName().value.toUpperCase() }} </span>
-            {{ connection.getVersion() }}
+            {{ connection.getVersion().value }}
         </div>
 
     </div>

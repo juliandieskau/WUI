@@ -39,7 +39,7 @@
                         radius: {{ waypoint.radius.toFixed(2) }}<br />
                     </l-tooltip>
                     <l-popup class="popup">
-                        #{{ index }}:
+                        <h1>#{{ index }}:</h1>
                         <form>
                             <div>
                                 <label>Name</label>
@@ -61,9 +61,12 @@
                                 <label>heading-accurracy</label>
                                 <input v-model="waypoint.heading_accuracy" type="number" />
                             </div>
-                            <button type="submit" @click.prevent="() => editWaypoint(index, waypoint)">save</button>
+                            <button type="submit" @click.prevent="() => editWaypoint(index, waypoint)"
+                                class="submit">save</button>
                         </form>
-                        <button type="button" @click.prevent="() => removeWaypoint(index)" class="delete">delete</button>
+                        <button type="button" @click.prevent="() => removeWaypoint(index)" class="delete">
+                            <MaterialSymbolsDeleteForever />
+                        </button>
                     </l-popup>
                 </l-marker>
             </template>
@@ -78,7 +81,9 @@ import { computed, onMounted, onUnmounted, ref, watch, type Ref } from "vue";
 import { DragEndEvent, LatLng, Point, PointExpression, type PointTuple } from "leaflet";
 
 import SolarMapPointAddLinear from '~icons/solar/map-point-add-linear';
+import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever';
 import MdiDog from '~icons/mdi/dog';
+
 import { ects_msgs, geometry_msgs } from "@/ECTS/Types/Messages";
 import { ECTS } from "@/ECTS/ECTS";
 import ROSLIB from "roslib";
@@ -138,6 +143,9 @@ const saveWaypointList = (name: string) => {
 
 const promptWaypointListName = () => {
     let name = prompt("Please enter a name for the new waypoint list", "");
+    if (!name?.endsWith(".waypoints")) {
+        name += ".waypoints";
+    }
     if (name) {
         saveWaypointList(name).then(() => {
             loadWaypointListDir();
@@ -238,11 +246,14 @@ onUnmounted(() => {
     border: 0;
 }
 
+:global(.leaflet-popup-content>.popup) {
+    width: 250px;
+}
 
 .popup>form {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
     align-items: stretch;
     justify-items: center;
 }
@@ -259,10 +270,16 @@ onUnmounted(() => {
 }
 
 .popup>form>div>input[type=checkbox] {
-    width: auto;
+    width: 13px;
 }
 
 button.delete {
     color: var(--color-important);
+}
+
+button.submit {
+    width: 100%;
+    color: var(--color-success);
+    font-weight: bolder;
 }
 </style>
