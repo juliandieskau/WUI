@@ -4,8 +4,8 @@ import type { ECTSPlugin } from './ECTSPlugin';
 import { ects_msgs, geometry_msgs, sensor_msgs, std_msgs } from './Types/Messages';
 export class ECTS {
     private ros: ROSLIB.Ros;
-    private name: Ref<string> = ref("ECTS");
-    private version: Ref<string> = ref("0.0.0");
+    private name: Ref<string> = ref("");
+    private version: Ref<string> = ref("");
     private topics: Map<string, ROSLIB.Topic[]> = new Map();
     private plugins: Map<ECTSPlugin, boolean> = reactive(new Map());
     private footer: Map<ECTSPlugin, Component> = reactive(new Map());
@@ -34,6 +34,10 @@ export class ECTS {
                 });
                 console.log("retransmit:");
                 this.sendMessage(new ROSLIB.Topic({ name: "/ects/retransmit", messageType: "ects/ForceRetransmit", ros: this.ros }), { reload_all: true, topic: "" } as ects_msgs.ForceRetrasmit);
+            }).catch((error) => {
+                this.status.value = "error";
+                this.name.value = "CONNECTED WITHOUT ECTS";
+                this.version.value = "";
             });
         });
         this.ros.on('error', () => {
