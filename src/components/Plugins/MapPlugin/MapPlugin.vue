@@ -15,8 +15,8 @@
                 <button v-if="!selectedFilename" @click="promptWaypointListName()">new list</button>
             </l-control>
             <l-control position="bottomright">
-                <button @click="addWaypointMiddle" title="add waypoint">
-                    <SolarMapPointAddLinear style="font-size: 2em; color: rgb(0, 147, 233)" />
+                <button @click="addWaypointMiddle" title="add waypoint" class="floating">
+                    <SolarMapPointAddLinear />
                 </button>
             </l-control>
             <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base"
@@ -27,8 +27,8 @@
                 </l-icon>
             </l-marker>
             <template v-if="props.refs.get('/ects/waypoints/waypoint_list')">
-                <l-polyline color="green" v-if="props.refs.get('/ects/control/position')" :lat-lngs="[...((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints.map((waypoint) => [waypoint.pose.x, waypoint.pose.y] as PointTuple),
-                [position[0], position[1]]]" />
+                <l-polyline color="green" v-if="props.refs.get('/ects/control/position')"
+                    :lat-lngs="[[position[0], position[1]], ...((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints.map((waypoint) => [waypoint.pose.x, waypoint.pose.y] as PointTuple)]" />
                 <l-marker
                     v-for="(waypoint, index) in ((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints"
                     :key="index" :lat-lng="[waypoint.pose.x, waypoint.pose.y]" draggable
@@ -289,5 +289,23 @@ button.submit {
     width: 100%;
     color: var(--color-success);
     font-weight: bolder;
+}
+
+button.floating {
+    border-radius: 500px;
+    aspect-ratio: 1;
+    font-size: 3em;
+    color: white;
+    background-color: rgb(0, 147, 233);
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+button.floating:hover {
+    outline: 1px solid black;
+    background-color: rgb(0, 162, 255);
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.5);
 }
 </style>

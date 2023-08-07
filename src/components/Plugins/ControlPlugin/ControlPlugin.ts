@@ -3,10 +3,9 @@ import { ECTSPlugin } from "@/ECTS/ECTSPlugin";
 
 export default class ControlPlugin extends ECTSPlugin {
     constructor(ects: ECTS) {
-        super("ControlPlugin", "Control", ects,
+        super("control", "Control", ects,
             {
                 componentNames: ["ControlPlugin"],
             });
-        this.data.set("#ects", this.ects);
     }
 }
