@@ -18,8 +18,9 @@ export abstract class ECTSPlugin {
         this.name = name;
         this.humanName = humanName;
         if (options?.topics) this.topics = options.topics;
-        this.data = reactive(new Map());
         if (options?.componentNames) this.componentNames = options.componentNames;
+        this.data = reactive(new Map());
+        this.data.set("#ects", this.ects);
     }
     initWindows(glayout: InstanceType<typeof Glayout>, active: boolean): void {
         console.log(`init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t) ${active ? "active" : "inactive"}`);

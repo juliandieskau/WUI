@@ -10,10 +10,5 @@ export default class MapPlugin extends ECTSPlugin {
                 ["/ects/waypoints/waypoint_list", "ects/WaypointList"],
                 ["/ects/waypoints/current_waypoint", "std_msgs/UInt32"]])
         });
-        this.data.set("#ects", this.ects);
-    }
-    update(topic: string, message: any): void {
-        console.log("update", topic, message);
-        super.update(topic, message);
     }
 }
