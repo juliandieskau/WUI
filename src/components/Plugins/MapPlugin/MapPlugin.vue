@@ -27,26 +27,28 @@
                 </l-icon>
             </l-marker>
             <template v-if="props.refs.get('/ects/waypoints/waypoint_list')">
-                <l-polyline color="green" v-if="props.refs.get('/ects/control/position')"
-                    :lat-lngs="[...((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints.map((waypoint) => [waypoint.pose.x, waypoint.pose.y] as PointTuple),
-                    [(props.refs.get('/ects/control/position') as geometry_msgs.Pose2D).x, (props.refs.get('/ects/control/position') as geometry_msgs.Pose2D).y]]" />
+                <l-polyline color="green" v-if="props.refs.get('/ects/control/position')" :lat-lngs="[...((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints.map((waypoint) => [waypoint.pose.x, waypoint.pose.y] as PointTuple),
+                [position[0], position[1]]]" />
                 <l-marker
                     v-for="(waypoint, index) in ((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints"
                     :key="index" :lat-lng="[waypoint.pose.x, waypoint.pose.y]" draggable
                     @dragend="event => moveWaypoint(event, index)">
                     <l-tooltip>
-                        {{ waypoint.name }} ({{ index }})<br />
+                        <h2>{{ waypoint.name }} ({{ index }})</h2> <br />
                         radius: {{ waypoint.radius.toFixed(2) }}<br />
+                        wait time: {{ waypoint.wait_time.toFixed(2) }}<br />
+                        use heading: {{ waypoint.use_heading }}<br />
+                        heading accuracy: {{ waypoint.heading_accuracy.toFixed(2) }}<br />
                     </l-tooltip>
                     <l-popup class="popup">
                         <h1>#{{ index }}:</h1>
                         <form>
                             <div>
-                                <label>Name</label>
+                                <label>name</label>
                                 <input v-model="waypoint.name" />
                             </div>
                             <div>
-                                <label>Radius</label>
+                                <label>radius</label>
                                 <input v-model="waypoint.radius" type="number" />
                             </div>
                             <div>
@@ -78,13 +80,14 @@
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LControl, LMarker, LIcon, LPolyline, LTooltip, LPopup } from "@vue-leaflet/vue-leaflet";
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from "vue";
-import { DragEndEvent, LatLng, Point, PointExpression, type PointTuple } from "leaflet";
+import L, { DragEndEvent, LatLng, Point, PointExpression, type PointTuple } from "leaflet";
+import "leaflet.utm";
 
 import SolarMapPointAddLinear from '~icons/solar/map-point-add-linear';
 import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever';
 import MdiDog from '~icons/mdi/dog';
 
-import { ects_msgs, geometry_msgs } from "@/ECTS/Types/Messages";
+import { ects_msgs, geometry_msgs, nav_msgs } from "@/ECTS/Types/Messages";
 import { ECTS } from "@/ECTS/ECTS";
 import ROSLIB from "roslib";
 
@@ -124,8 +127,9 @@ const props = defineProps({
 });
 
 const position = computed(() => {
-    let pos = props.refs.get('/ects/control/position') as geometry_msgs.Pose2D;
-    return [pos.x, pos.y] as PointTuple;
+    let pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
+    const latLng = utmToLatLng(pos.pose.pose.position.x, pos.pose.pose.position.y);
+    return [latLng.lat, latLng.lng] as PointTuple;
 });
 
 
@@ -201,7 +205,7 @@ const removeWaypoint = (index: number) => {
 
 watch(() => props.refs.get('/ects/control/position'), (value, oldValue) => {
     if (value && !oldValue) {
-        centerView(value.x, value.y);
+        centerViewOnRobot();
     }
 });
 
@@ -209,16 +213,20 @@ watch(() => props.refs.get('/ects/control/position'), (value, oldValue) => {
 /**
  * @description Centers the map on the coordinates and sets the zoom level to 20.
  */
-const centerView = (x: number, y: number) => {
+const centerView = (latLng: L.LatLng) => {
     zoom.value = 20;
-    center.value = [x, y];
+    center.value = [latLng.lat, latLng.lng];
 };
 
 const centerViewOnRobot = () => {
-    let pos = props.refs.get('/ects/control/position');
-    if (pos) {
-        centerView(pos.x, pos.y);
+    console.log("center view on robot", position.value);
+    if (position.value) {
+        centerView({ lat: position.value[0], lng: position.value[1] } as L.LatLng);
     }
+};
+
+const utmToLatLng = (x: number, y: number) => {
+    return L.utm({ x: x, y: y, zone: 32, band: "U", southHemi: false }).latLng();
 };
 
 const observer = new IntersectionObserver(() => {

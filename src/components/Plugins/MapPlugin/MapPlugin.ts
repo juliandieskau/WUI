@@ -12,8 +12,4 @@ export default class MapPlugin extends ECTSPlugin {
         });
         this.data.set("#ects", this.ects);
     }
-    update(topic: string, message: any): void {
-        console.log("update", topic, message);
-        super.update(topic, message);
-    }
 }
