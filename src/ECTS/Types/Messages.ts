@@ -61,6 +61,22 @@ export namespace ects_msgs {
         available: number,
     }
 
+    export type MemoryUsageHistory = {
+        aggregation: Aggregation,
+        measurements: MemoryUsage[],
+    }
+
+    export type NetworkUsage = {
+        down_speed: number,
+        up_speed: number,
+        wifi_signal_strength: number,
+    }
+
+    export type NetworkUsageHistory = {
+        aggregation: Aggregation,
+        measurements: NetworkUsage[],
+    }
+
     export type Position2d = {
         x: number,
         y: number,

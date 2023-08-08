@@ -6,6 +6,7 @@ import ROSLIB from "roslib";
 export default class SystemPlugin extends ECTSPlugin {
     networkAdapters: string[] = [];
     aggregationList: string[] = [];
+    networkUsages: Map<[string, string], ects_msgs.NetworkUsageHistory> = new Map();
 
     constructor(ects: ECTS) {
         super("systemmonitor", "System Resources", ects, {
@@ -26,6 +27,9 @@ export default class SystemPlugin extends ECTSPlugin {
                 this.topics.set(`/ects/system/averages/${aggregation}/cpu/usage`, "ects/Aggregation");
                 ects.registerListener(this, `/ects/system/averages/${aggregation}/cpu/usage`, 'ects/CpuUsageHistory');
 
+                this.topics.set(`/ects/system/averages/${aggregation}/mem/usage`, "ects/Aggregation");
+                ects.registerListener(this, `/ects/system/averages/${aggregation}/mem/usage`, 'ects/MemoryUsageHistory');
+
                 this.ects.callService("/ects/system/network/adapters", "ects/NetworkAdapters", new ROSLIB.ServiceRequest({})).then((response) => {
                     this.networkAdapters = (response as ects_msgs.AdapterList).adapters;
                     this.data.set('#network_adapters', this.networkAdapters);
@@ -39,7 +43,6 @@ export default class SystemPlugin extends ECTSPlugin {
         }).finally(() => { console.log(this.topics); });
     }
     //update(topic: string, message: any): void {
-    //    if (topic.startsWith('/ects/system/averages')) console.log(topic, message);
     //    super.update(topic, message);
     //}
 }
