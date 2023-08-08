@@ -14,7 +14,7 @@
 
             </div>
             <template v-if="aggregations">
-                History every
+                History per
                 <select v-model="aggregation">
                     <option :value="null"></option>
                     <option v-for="agg in aggregations" :key="agg" :value="agg">

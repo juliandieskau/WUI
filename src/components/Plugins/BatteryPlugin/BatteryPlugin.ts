@@ -4,7 +4,7 @@ import { ECTS } from "@/ECTS/ECTS";
 
 export default class BatteryPlugin extends ECTSPlugin {
     constructor(ects: ECTS) {
-        super("battery", "Battery Plugin", ects,
+        super("battery", "Battery", ects,
             {
                 componentNames: ["BatteryPlugin"],
                 topics: new Map<string, string>([
