@@ -26,9 +26,9 @@
                     <mdi-dog style="color: orange; font-size: 1.5em;" />
                 </l-icon>
             </l-marker>
-            <template v-if="props.refs.get('/ects/waypoints/waypoint_list')">
-                <l-polyline color="green" v-if="props.refs.get('/ects/control/position')"
-                    :lat-lngs="[[position[0], position[1]], ...((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints.map((waypoint) => [waypoint.pose.x, waypoint.pose.y] as PointTuple)]" />
+            <template v-if="waypointList">
+                <l-polyline color="green" v-if="position"
+                    :lat-lngs="[[position[0], position[1]], ...waypointList.waypoints.map((waypoint) => [waypoint.pose.x, waypoint.pose.y] as PointTuple)]" />
                 <l-marker
                     v-for="(waypoint, index) in ((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints"
                     :key="index" :lat-lng="[waypoint.pose.x, waypoint.pose.y]" draggable
@@ -91,6 +91,10 @@ import { ects_msgs, geometry_msgs, nav_msgs } from "@/ECTS/Types/Messages";
 import { ECTS } from "@/ECTS/ECTS";
 import ROSLIB from "roslib";
 
+const props = defineProps({
+    refs: { type: Object, required: true, default: () => { } }
+});
+
 const el: Ref<HTMLDivElement | null> = ref(null);
 
 const zoom: Ref<number> = ref(24);
@@ -99,14 +103,20 @@ const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 const ects = computed(() => props.refs.get('#ects') as ECTS);
 const waypointLists = ref<string[]>([]);
 const selectedFilename = ref('');
+
 const waypointList = computed({
     get() {
-        const list = props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
-        return list;
+        return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
     },
     set(newValue) {
         props.refs.set('/ects/waypoints/waypoint_list', newValue);
     },
+});
+
+const position = computed(() => {
+    let pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
+    const latLng = utmToLatLng(pos.pose.pose.position.x, pos.pose.pose.position.y);
+    return [latLng.lat, latLng.lng] as PointTuple;
 });
 
 const loadWaypointListDir = () => {
@@ -116,20 +126,19 @@ const loadWaypointListDir = () => {
     });
 };
 
+const reset = () => {
+    waypointLists.value = [];
+    selectedFilename.value = '';
+    waypointList.value = null as unknown as ects_msgs.WaypointList;
+};
+
 loadWaypointListDir();
 
 watch(() => props.refs.get('/ects/waypoints/waypoint_list'), (value, oldValue) => {
-    console.log("received list update", value);
-});
-
-const props = defineProps({
-    refs: { type: Object, required: true, default: () => { } }
-});
-
-const position = computed(() => {
-    let pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
-    const latLng = utmToLatLng(pos.pose.pose.position.x, pos.pose.pose.position.y);
-    return [latLng.lat, latLng.lng] as PointTuple;
+    console.log("received list update", value, oldValue);
+    if (!value && oldValue) {
+        reset();
+    }
 });
 
 

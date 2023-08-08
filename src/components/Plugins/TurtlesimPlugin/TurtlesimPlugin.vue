@@ -1,17 +1,19 @@
 <template>
-    <template v-for="[topic, pose] in (props.refs as Map<string, any>)" :key="topic">
-        <h1>Turtlesim</h1>
-        <span class="key">
-            {{ topic }}:
-        </span>
-        <div v-for="[key, v] in Object.entries(pose)" :key="key">
+    <template v-for="[topic, message] in (props.refs as Map<string, any>)" :key="topic">
+        <template v-if="topic != '#ects'">
+            <h1>Turtlesim</h1>
             <span class="key">
-                {{ key }}:
+                {{ topic }}:
             </span>
-            <span class="val">
-                {{ (v as number).toFixed(2) }}
-            </span>
-        </div>
+            <div v-for="[key, v] in Object.entries(message)" :key="key">
+                <span class="key">
+                    {{ key }}:
+                </span>
+                <span class="val">
+                    {{ v }}
+                </span>
+            </div>
+        </template>
     </template>
 </template>
 

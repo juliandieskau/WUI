@@ -23,6 +23,14 @@ export namespace ects_msgs {
         robot_name: string,
     }
 
+    export type AdapterList = {
+        adapters: string[],
+    }
+
+    export type AggregationList = {
+        available_aggregations: Aggregation[],
+    }
+
     export type Aggregation = {
         ectsname: string,
         type: typeof Aggregation.Type,
@@ -41,7 +49,7 @@ export namespace ects_msgs {
         load_averages: number[]
     }
     export type CpuUsageHistory = {
-        averaging_duration: number,
+        aggregation: Aggregation,
         measurements: CpuUsage[],
     }
     export type MemoryUsage = {
