@@ -1,7 +1,7 @@
 import ROSLIB from 'roslib';
 import { Component, defineAsyncComponent, markRaw, reactive, ref, type Ref } from 'vue';
 import type { ECTSPlugin } from './ECTSPlugin';
-import { ects_msgs, geometry_msgs, sensor_msgs, std_msgs } from './Types/Messages';
+import { ects_msgs, geometry_msgs, nav_msgs, sensor_msgs, std_msgs } from './Types/Messages';
 export class ECTS {
     private ros: ROSLIB.Ros;
     private name: Ref<string> = ref("");
@@ -164,14 +164,42 @@ export class ECTS {
                     plugin.update("/ects/battery/estimated_time_remaining", { data: 100 - percent } as std_msgs.Float32);
                 }, 500);
             } else if (topicName === "/ects/control/position") {
-                const position = { x: 49.01544629387268, y: 8.426687545524752, theta: 0 } as geometry_msgs.Pose2D;
+                const position: nav_msgs.Odometry = {
+                    child_frame_id: "",
+                    twist: {
+                        twist: {
+                            linear: {
+                                x: 0,
+                                y: 0,
+                                z: 0
+                            },
+                            angular: {
+                                x: 0,
+                                y: 0,
+                                z: 0
+                            }
+                        },
+                        covariance: []
+                    },
+                    pose: {
+                        pose: {
+                            position: { x: 458055.5575336556, y: 5429369.403000699, z: 0 },
+                            orientation: {
+                                x: 0,
+                                y: 0,
+                                z: 0,
+                                w: 0
+                            }
+                        },
+                        covariance: []
+                    }
+                };
                 setInterval(() => {
                     if (this.plugins.get(plugin) === false) return;
-                    position.x += Math.random() * 0.0001 - 0.00005;
-                    position.y += Math.random() * 0.0001 - 0.00005;
-                    position.theta += Math.random() * 0.001;
+                    position.pose.pose.position.x += Math.random() * 10 - 5;
+                    position.pose.pose.position.y += Math.random() * 10 - 5;
                     plugin.update(topicName, position);
-                }, 1500);
+                }, 500);
             } else if (topicName === "/ects/waypoints/waypoint_list") {
                 const waypoints: ects_msgs.WaypointList = {
                     name: 'list', waypoints: [
