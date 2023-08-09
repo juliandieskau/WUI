@@ -21,9 +21,9 @@
             </l-control>
             <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base"
                 name="OpenStreetMap"></l-tile-layer>
-            <l-marker v-if="props.refs.get('/ects/control/position')" :lat-lng="position">
-                <l-icon style="background-color: transparent; border: 0">
-                    <mdi-dog style="color: orange; font-size: 1.5em;" />
+            <l-marker v-if="props.refs.get('/ects/control/position')" :lat-lng="position!">
+                <l-icon style="background-color: transparent; border: 0" :icon-anchor="[18, 18]">
+                    <mdi-dog style="color: orange; font-size: 3em;" />
                 </l-icon>
             </l-marker>
             <template v-if="waypointList">
@@ -115,6 +115,7 @@ const waypointList = computed({
 
 const position = computed(() => {
     let pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
+    if (!pos) return undefined;
     const latLng = utmToLatLng(pos.pose.pose.position.x, pos.pose.pose.position.y);
     return [latLng.lat, latLng.lng] as PointTuple;
 });
