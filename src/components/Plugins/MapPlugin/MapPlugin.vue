@@ -1,8 +1,10 @@
 <template>
     <div ref="el" id="el">
         <l-map ref="map" v-model:zoom="zoom" v-model:center="center">
-            <l-control position="topleft">
-                <button @click="centerViewOnRobot()" title="center view">📌</button>
+            <l-control position="bottomleft">
+                <button @click="centerViewOnRobot()" title="center view" class="floating locate">
+                    <IonMdLocate />
+                </button>
             </l-control>
             <l-control position="topright">
                 <select v-model="selectedFilename">
@@ -15,24 +17,53 @@
                 <button v-if="!selectedFilename" @click="promptWaypointListName()">new list</button>
             </l-control>
             <l-control position="bottomright">
-                <button @click="addWaypointMiddle" title="add waypoint" class="floating">
-                    <SolarMapPointAddLinear />
+                <button @click="addWaypointMiddle" title="add waypoint" class="floating addwp">
+                    <IcSharpAddLocationAlt />
+                </button>
+                <button @click="stopWaypoints" title="stop" class="floating pause" v-if="waypoint_is_executing">
+                    <MaterialSymbolsPauseCircle />
+                </button>
+                <button @click="executeWaypoints" title="start" class="floating play" v-else>
+                    <MaterialSymbolsPlayCircle />
+                </button>
+                <button @click="toggleRepeat" title="repeat" class="floating repeat"
+                    :class="waypointList.cyclic ? 'active' : 'inactive'">
+                    <EmojioneMonotoneRepeatButton />
                 </button>
             </l-control>
             <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base"
                 name="OpenStreetMap"></l-tile-layer>
             <l-marker v-if="props.refs.get('/ects/control/position')" :lat-lng="position!">
-                <l-icon style="background-color: transparent; border: 0" :icon-anchor="[18, 18]">
-                    <mdi-dog style="color: orange; font-size: 3em;" />
+                <l-icon style="background-color: transparent; border: 0;" :icon-anchor="[18, 20]">
+                    <SolarMapArrowLeftBold style="color: red; font-size: 3em" :style="`transform: rotate(${angle}rad)`" />
                 </l-icon>
             </l-marker>
-            <template v-if="waypointList">
-                <l-polyline color="green" v-if="position"
-                    :lat-lngs="[[position[0], position[1]], ...waypointList.waypoints.map((waypoint) => [waypoint.pose.x, waypoint.pose.y] as PointTuple)]" />
-                <l-marker
-                    v-for="(waypoint, index) in ((props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList)).waypoints"
-                    :key="index" :lat-lng="[waypoint.pose.x, waypoint.pose.y]" draggable
-                    @dragend="event => moveWaypoint(event, index)">
+            <template v-if="props.refs.get('#waypoint_list')">
+                <template v-if="current_waypoint_index != null">
+                    // dotted line from robot to current waypoint
+                    <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'" dash-array="6, 8" v-if="position"
+                        :lat-lngs="[[waypointList.waypoints[current_waypoint_index].pose.x, waypointList.waypoints[current_waypoint_index].pose.y], [position[0], position[1]]]" />
+                    // line from last to next waypoint
+                    <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'"
+                        :lat-lngs="waypointList.waypoints.slice(current_waypoint_index - 1, current_waypoint_index + 1).map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
+                    // line from first to current waypoint
+                    <l-polyline color="gray"
+                        :lat-lngs="waypointList.waypoints.slice(0, current_waypoint_index).map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
+                    // line from current to last waypoint
+                    <l-polyline :color="waypoint_is_executing ? 'orange' : 'gray'"
+                        :lat-lngs="waypointList.waypoints.slice(current_waypoint_index).map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
+                    // line from last to first if cyclic
+                </template>
+                <template v-else>
+                    // lines between waypoints when unknown current waypoint
+                    <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'" v-if="position"
+                        :lat-lngs="waypointList.waypoints.map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
+                </template>
+                <l-polyline color="gray" v-if="position && waypointList.cyclic" dash-array="1, 16"
+                    :lat-lngs="[[waypointList.waypoints[waypointList
+                        .waypoints.length - 1].pose.x, waypointList.waypoints[waypointList.waypoints.length - 1].pose.y], [waypointList.waypoints[0].pose.x, waypointList.waypoints[0].pose.y]]" />
+                <l-marker v-for="(waypoint, index) in waypointList.waypoints" :key="index"
+                    :lat-lng="[waypoint.pose.x, waypoint.pose.y]" draggable @dragend="event => moveWaypoint(event, index)">
                     <l-tooltip>
                         <h2>{{ waypoint.name }} ({{ index }})</h2> <br />
                         radius: {{ waypoint.radius.toFixed(2) }}<br />
@@ -80,16 +111,20 @@
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LControl, LMarker, LIcon, LPolyline, LTooltip, LPopup } from "@vue-leaflet/vue-leaflet";
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from "vue";
-import L, { DragEndEvent, LatLng, Point, PointExpression, type PointTuple } from "leaflet";
-import "leaflet.utm";
-
-import SolarMapPointAddLinear from '~icons/solar/map-point-add-linear';
-import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever';
-import MdiDog from '~icons/mdi/dog';
-
-import { ects_msgs, geometry_msgs, nav_msgs } from "@/ECTS/Types/Messages";
+import L, { DragEndEvent, LatLng, type PointTuple } from "leaflet";
+import { ects_msgs, nav_msgs, std_msgs } from "@/ECTS/Types/Messages";
 import { ECTS } from "@/ECTS/ECTS";
 import ROSLIB from "roslib";
+import Quaternion from "quaternion";
+import "leaflet.utm";
+
+import IonMdLocate from '~icons/ion/md-locate';
+import IcSharpAddLocationAlt from '~icons/ic/sharp-add-location-alt';
+import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever';
+import MaterialSymbolsPlayCircle from '~icons/material-symbols/play-circle';
+import MaterialSymbolsPauseCircle from '~icons/material-symbols/pause-circle';
+import SolarMapArrowLeftBold from '~icons/solar/map-arrow-left-bold';
+import EmojioneMonotoneRepeatButton from '~icons/emojione-monotone/repeat-button';
 
 const props = defineProps({
     refs: { type: Object, required: true, default: () => { } }
@@ -104,21 +139,61 @@ const ects = computed(() => props.refs.get('#ects') as ECTS);
 const waypointLists = ref<string[]>([]);
 const selectedFilename = ref('');
 
-const waypointList = computed({
-    get() {
-        return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
-    },
-    set(newValue) {
-        props.refs.set('/ects/waypoints/waypoint_list', newValue);
-    },
+const waypointList = computed(() => {
+    return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
 });
 
 const position = computed(() => {
-    let pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
-    if (!pos) return undefined;
+    const pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
+    if (!pos) return null;
     const latLng = utmToLatLng(pos.pose.pose.position.x, pos.pose.pose.position.y);
     return [latLng.lat, latLng.lng] as PointTuple;
 });
+
+const angle = computed(() => {
+    const pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
+    if (!pos) return null;
+    const [x, y, z, w] = [pos.pose.pose.orientation.x, pos.pose.pose.orientation.y, pos.pose.pose.orientation.z, pos.pose.pose.orientation.w];
+    const q = new Quaternion(x, y, z, w);
+    return q.toEuler().pitch;
+});
+
+const current_waypoint_index = computed(() => {
+    const index = (props.refs.get('/ects/waypoints/current_waypoint') as std_msgs.UInt32)?.data;
+    if (index == null || index >= waypointList.value.waypoints?.length!) return null;
+    return index;
+});
+
+const waypoint_is_executing = computed(() => {
+    return (props.refs.get('/ects/waypoints/is_executing') as std_msgs.Bool)?.data ?? false;
+});
+
+const executeWaypoints = () => {
+    const topic = new ROSLIB.Topic({
+        ros: ects.value.getRos(),
+        name: '/ects/waypoints/execute',
+        messageType: "std_msgs/Empty"
+    });
+    ects.value.sendMessage(topic, new ROSLIB.Message({}));
+};
+
+const stopWaypoints = () => {
+    const topic = new ROSLIB.Topic({
+        ros: ects.value.getRos(),
+        name: '/ects/waypoints/stop',
+        messageType: "std_msgs/Empty"
+    });
+    ects.value.sendMessage(topic, new ROSLIB.Message({}));
+};
+
+const toggleRepeat = () => {
+    const topic = new ROSLIB.Topic({
+        ros: ects.value.getRos(),
+        name: '/ects/waypoints/repeat_waypoints',
+        messageType: "std_msgs/Bool"
+    });
+    ects.value.sendMessage(topic, new ROSLIB.Message({ data: !waypointList.value.cyclic } as std_msgs.Bool));
+};
 
 const loadWaypointListDir = () => {
     ects.value.callService('/ects/waypoints/saved_lists', 'ects/WaypointListDirectory', new ROSLIB.ServiceRequest({})).then((response) => {
@@ -130,13 +205,12 @@ const loadWaypointListDir = () => {
 const reset = () => {
     waypointLists.value = [];
     selectedFilename.value = '';
-    waypointList.value = null as unknown as ects_msgs.WaypointList;
+    props.refs.set('/ects/waypoints/waypoint_list', null);
 };
 
 loadWaypointListDir();
 
 watch(() => props.refs.get('/ects/waypoints/waypoint_list'), (value, oldValue) => {
-    console.log("received list update", value, oldValue);
     if (!value && oldValue) {
         reset();
     }
@@ -168,40 +242,43 @@ const promptWaypointListName = () => {
 };
 
 const addWaypointMiddle = () => {
-    console.log("add waypoint", waypointList.value.waypoints.length);
+    console.log("add waypoint", waypointList.value.waypoints.length, center.value);
+    if (!waypointList.value) return;
     const ects: ECTS = props.refs.get('#ects');
-    console.log("add waypoint", center.value);
-    ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/add_waypoint', messageType: "ects/AddWaypoint", }), new ROSLIB.Message({
+    const utm = latLngToUtm((center.value as unknown as LatLng).lat, (center.value as unknown as LatLng).lng);
+    console.log(utm);
+    const message = {
         waypoint: {
             name: "new waypoint",
             pose: {
-                x: (center.value as unknown as LatLng).lat,
-                y: (center.value as unknown as LatLng).lng,
+                x: utm.x,
+                y: utm.y,
                 theta: 0
             },
             radius: 1
         },
         index: waypointList.value.waypoints.length
-    } as ects_msgs.AddWaypoint));
+    } as ects_msgs.AddWaypoint;
+    console.log(message);
+    ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/add_waypoint', messageType: "ects/AddWaypoint", }), new ROSLIB.Message(message));
 };
 
 const moveWaypoint = (event: DragEndEvent, index: number) => {
-    console.log("move waypoint", index);
-    const waypoint = waypointList.value.waypoints[index];
-    waypoint.pose.x = event.target.getLatLng().lat;
-    waypoint.pose.y = event.target.getLatLng().lng;
-    const newList = waypointList.value;
-    newList.waypoints[index] = waypoint;
-    waypointList.value = newList;
-    editWaypoint(index, waypoint);
+    if (!waypointList.value) return;
+    const waypointLatLng = waypointList.value.waypoints[index];
+    waypointLatLng.pose.x = event.target.getLatLng().lat;
+    waypointLatLng.pose.y = event.target.getLatLng().lng;
+    editWaypoint(index, waypointLatLng);
 };
 
 const editWaypoint = (index: number, waypoint: ects_msgs.Waypoint) => {
-    console.log("send replace waypoint", index, waypoint);
+    console.log("send replace waypoint", index, waypoint.pose.x, waypoint.pose.y);
+    const utm = latLngToUtm(waypoint.pose.x, waypoint.pose.y);
+    const waypointUtm = { ...waypoint, pose: { x: utm.x, y: utm.y, theta: waypoint.pose.theta } } as ects_msgs.Waypoint;
     const ects: ECTS = props.refs.get('#ects');
     ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/replace_waypoint', messageType: "ects/ReplaceWaypoint", }), new ROSLIB.Message({
         index_to_replace: index,
-        replacement_waypoint: waypoint
+        replacement_waypoint: waypointUtm
     } as ects_msgs.ReplaceWaypoint));
 };
 
@@ -236,7 +313,15 @@ const centerViewOnRobot = () => {
 };
 
 const utmToLatLng = (x: number, y: number) => {
-    return L.utm({ x: x, y: y, zone: 32, band: "U", southHemi: false }).latLng();
+    const latLng = L.utm({ x: x, y: y, zone: 32, band: "U", southHemi: false }).latLng();
+    return latLng;
+};
+
+const latLngToUtm = (lat: number, lng: number) => {
+    const latlng = new L.LatLng(lat, lng);
+    const utm = latlng.utm(32, false);
+    console.log(latlng.lat, latlng.lng); console.log(utm.x, utm.y);
+    return utm;
 };
 
 const observer = new IntersectionObserver(() => {
@@ -302,11 +387,11 @@ button.submit {
 }
 
 button.floating {
+    margin: 10px 0;
     border-radius: 500px;
     aspect-ratio: 1;
     font-size: 3em;
     color: white;
-    background-color: rgb(0, 147, 233);
     border: 1px solid black;
     display: flex;
     align-items: center;
@@ -315,7 +400,43 @@ button.floating {
 
 button.floating:hover {
     outline: 1px solid black;
-    background-color: rgb(0, 162, 255);
     box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.5);
+}
+
+.addwp {
+    background-color: rgb(0, 147, 233);
+}
+
+.addwp:hover {
+    background-color: rgb(0, 162, 255);
+}
+
+.play {
+    background-color: rgb(3, 194, 3);
+}
+
+.play:hover {
+    background-color: rgb(0, 229, 0);
+}
+
+.pause {
+    background-color: rgb(255, 0, 0);
+}
+
+.pause:hover {
+    background-color: rgb(255, 51, 51);
+}
+
+.repeat.active {
+    background-color: rgb(255, 174, 0);
+}
+
+
+.repeat.inactive {
+    background-color: rgb(105, 72, 1);
+}
+
+.locate {
+    background-color: red;
 }
 </style>

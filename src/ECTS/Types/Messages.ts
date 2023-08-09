@@ -6,6 +6,10 @@ export namespace std_msgs {
         data: number;
     }
 
+    export type UInt32 = {
+        data: number;
+    }
+
     export type Bool = {
         data: boolean;
     }
@@ -140,6 +144,8 @@ export namespace ects_msgs {
     export type WaypointList = {
         name: string,
         waypoints: ects_msgs.Waypoint[],
+        total_length: number,
+        cyclic: boolean,
     }
     export type WaypointListDirectory = {
         filenames: string[],
@@ -231,7 +237,7 @@ export namespace geometry_msgs {
     export type PoseWithCovariance = {
         pose: Pose,
         /** 6x6 matrix (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis) */
-        covariance: number[][],
+        covariance: number[],
     }
 
     export type Twist = {

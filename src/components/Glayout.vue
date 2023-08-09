@@ -322,6 +322,8 @@ onMounted(() => {
 		MapComponents.delete(container);
 		AllComponents.value.delete(component.refId);
 		UnusedIndices.push(component.refId);
+
+		saveLayout();
 	};
 
 	GLayout = new VirtualLayout(
