@@ -72,9 +72,33 @@ export namespace ects_msgs {
         wifi_signal_strength: number,
     }
 
+    export type NetworkInfo = {
+        interface_name: string,
+        human_readable_ip_address: string,
+        default_gateway: string,
+        dns_addresses: string,
+        link_is_up: boolean,
+        wlan_ssid: string,
+    }
+
     export type NetworkUsageHistory = {
         aggregation: Aggregation,
         measurements: NetworkUsage[],
+    }
+
+    export type DiskUsage = {
+        size_total: number,
+        used: number,
+    }
+
+    export type DiskUsageHistory = {
+        aggregation: Aggregation,
+        measurements: DiskUsage[],
+    }
+
+    export type MountpointList = {
+        rosname: string[],
+        mountpoint: string[],
     }
 
     export type Position2d = {

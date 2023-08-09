@@ -112,6 +112,19 @@
                 </div>
             </template>
         </div>
+        <div v-if="props.refs.get('#mountpoint_list')" class="dataset">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+                <h2>Disks</h2>
+                <span>total {{ totalDiskUsage }}%</span>
+            </div>
+            <div class="disks">
+                <span v-for="agg in props.refs.get('#mountpoint_list')" :key="agg">
+                    {{ agg }}: {{ ((props.refs.get(`/ects/system/disk/${agg}/usage`) as
+                        ects_msgs.DiskUsage)?.used / (props.refs.get(`/ects/system/disk/${agg}/usage`) as
+                            ects_msgs.DiskUsage)?.size_total * 100).toFixed(2) }}%
+                </span>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -121,7 +134,6 @@ import { computed, ref } from 'vue';
 import { ChartData, scales } from 'chart.js';
 import BarChart from './BarChart.vue';
 import LineChart from './LineChart.vue';
-import { optimizeDeps } from 'vite';
 
 const props = defineProps({
     refs: { type: Map<string, any>, required: true, default: () => { } }
@@ -201,8 +213,38 @@ const netdatahistory = computed(() => {
             data: (props.refs.get(`/ects/system/averages/${network_aggregation_selection.value}/network/${network_adapter_selection.value}/usage`) as ects_msgs.NetworkUsageHistory).measurements.map((usage: ects_msgs.NetworkUsage) => usage.up_speed),
             backgroundColor: 'rgb(200, 40, 255)',
             borderColor: 'rgb(200, 40, 255)',
+            pointRadius: 5,
         }]
     } as unknown as ChartData<'bar'>;
+});
+
+
+const totalDiskUsed = computed(() => {
+    const disks = props.refs.get('#mountpoint_list');
+    if (!disks) return null;
+    const sum = disks.reduce((acc: number, disk: string) => {
+        const usage = props.refs.get(`/ects/system/disk/${disk}/usage`) as ects_msgs.DiskUsage;
+        if (!usage) return acc;
+        return acc + usage.used;
+    }, 0);
+
+    return sum;
+});
+
+const totalDiskSpace = computed(() => {
+    const disks = props.refs.get('#mountpoint_list');
+    if (!disks) return null;
+    const sum = disks.reduce((acc: number, disk: string) => {
+        const usage = props.refs.get(`/ects/system/disk/${disk}/usage`) as ects_msgs.DiskUsage;
+        if (!usage) return acc;
+        return acc + usage.size_total;
+    }, 0);
+
+    return sum;
+});
+
+const totalDiskUsage = computed(() => {
+    return totalDiskUsed.value && totalDiskSpace.value ? (totalDiskUsed.value / totalDiskSpace.value * 100).toFixed(2) : null;
 });
 </script>
 
@@ -223,5 +265,13 @@ const netdatahistory = computed(() => {
 
 .dataset {
     outline: 1px solid var(--color-background-soft);
+}
+
+.disks {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    font-size: small;
 }
 </style>
