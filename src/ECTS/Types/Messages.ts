@@ -141,6 +141,10 @@ export namespace ects_msgs {
         replacement_waypoint: Waypoint,
     }
 
+    export type ReorderWaypoints = {
+        new_indices: number[],
+    }
+
     export type WaypointList = {
         name: string,
         waypoints: ects_msgs.Waypoint[],
@@ -155,6 +159,29 @@ export namespace ects_msgs {
 
 }
 
+export namespace iosb_localization_filter {
+    export type FilterState = {
+        P: number[],
+        euler_angles: number[],
+        pos: number[],
+        vel: number[],
+        bias_acc: number[],
+        bias_omega: number[],
+        scale_factor_vel_odo: number[],
+        driving_mode: number,
+        gps_active: boolean,
+        fog_active: boolean,
+        odo_vel_active: boolean[],
+        delta_3d_active: boolean[],
+        delta_2d_active: boolean[],
+        twist_active: boolean,
+        loc_in_map_active: boolean,
+        heading_estimator_active: boolean,
+        obtained_init_data: boolean,
+        obtained_gps: boolean,
+        obtained_loc_in_map: boolean,
+    }
+}
 export namespace sensor_msgs {
     export type BatteryState = {
         voltage: number
@@ -166,6 +193,16 @@ export namespace sensor_msgs {
         power_supply_status: number
         power_supply_health: number
         power_supply_technology: number
+    }
+
+    export type Imu = {
+        orientation: geometry_msgs.Quaternion,
+        orientation_covariance: number[],
+        angular_velocity: geometry_msgs.Vector3,
+        angular_velocity_covariance: number[],
+        linear_acceleration: geometry_msgs.Vector3,
+        linear_acceleration_covariance: number[],
+
     }
 
     export const
@@ -234,6 +271,12 @@ export namespace geometry_msgs {
         theta: number,
     }
 
+    export type Vector3 = {
+        x: number,
+        y: number,
+        z: number,
+    }
+
     export type PoseWithCovariance = {
         pose: Pose,
         /** 6x6 matrix (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis) */
@@ -241,8 +284,8 @@ export namespace geometry_msgs {
     }
 
     export type Twist = {
-        linear: { x: number, y: number, z: number },
-        angular: { x: number, y: number, z: number }
+        linear: Vector3,
+        angular: Vector3
     }
 
     export type TwistWithCovariance = {

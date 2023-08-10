@@ -12,7 +12,9 @@ export default class MapPlugin extends ECTSPlugin {
                 ["/ects/control/position", "nav_msgs/Odometry"],
                 ["/ects/waypoints/waypoint_list", "ects/WaypointList"],
                 ["/ects/waypoints/current_waypoint", "std_msgs/UInt32"],
-                ["/ects/waypoints/is_executing", "std_msgs/Bool"]
+                ["/ects/waypoints/is_executing", "std_msgs/Bool"],
+                ["/ects/imu/current", "sensor_msgs/Imu"],
+                ["/ects/control/filter_state", "iosb_localization_filter/FilterState"]
             ])
         });
     }

@@ -1,8 +1,11 @@
 <template>
     <div ref="el" id="el">
         <l-map ref="map" v-model:zoom="zoom" v-model:center="center">
+            <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base" name="OpenStreetMap"
+                :max-zoom="19"></l-tile-layer>
             <l-control position="bottomleft">
-                <button @click="centerViewOnRobot()" title="center view" class="floating locate">
+                <button @click="centerViewOnRobot()" title="center view" class="floating center"
+                    :class="position ? 'active' : 'inactive'">
                     <IonMdLocate />
                 </button>
             </l-control>
@@ -31,8 +34,6 @@
                     <EmojioneMonotoneRepeatButton />
                 </button>
             </l-control>
-            <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" layer-type="base"
-                name="OpenStreetMap"></l-tile-layer>
             <l-marker v-if="props.refs.get('/ects/control/position')" :lat-lng="position!">
                 <l-icon style="background-color: transparent; border: 0;" :icon-anchor="[18, 20]">
                     <SolarMapArrowLeftBold style="color: red; font-size: 3em" :style="`transform: rotate(${angle}rad)`" />
@@ -56,7 +57,7 @@
                 </template>
                 <template v-else>
                     // lines between waypoints when unknown current waypoint
-                    <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'" v-if="position"
+                    <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'"
                         :lat-lngs="waypointList.waypoints.map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
                 </template>
                 <l-polyline color="gray" v-if="position && waypointList.cyclic" dash-array="1, 16"
@@ -72,7 +73,18 @@
                         heading accuracy: {{ waypoint.heading_accuracy.toFixed(2) }}<br />
                     </l-tooltip>
                     <l-popup class="popup">
-                        <h1>#{{ index }}:</h1>
+                        <div class="popup-header">
+                            <h1>#{{ index }}:</h1>
+                            <div>
+                                <label>swap to</label>
+                                <select v-model="swap_selected" @change="() => reorderWaypoints(swap_selected, index)">
+                                    <option v-for="(_, swap_index) in waypointList.waypoints" :key="swap_index"
+                                        :value="swap_index" :selected="swap_index == index">
+                                        {{ swap_index }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
                         <form>
                             <div>
                                 <label>name</label>
@@ -90,10 +102,28 @@
                                 <label>use-heading</label>
                                 <input v-model="waypoint.use_heading" type="checkbox" />
                             </div>
-                            <div>
-                                <label>heading-accurracy</label>
-                                <input v-model="waypoint.heading_accuracy" type="number" />
-                            </div>
+                            <template v-if="waypoint.use_heading">
+                                <div class="horizontal">
+                                    <label>heading</label>
+                                    <div class="vertical">
+                                        <input v-model="waypoint_pose_theta" type="range" :max="2 * Math.PI + 0.1" :min="0"
+                                            :step="Math.PI / 8"
+                                            @input="() => { waypoint.pose.theta = +waypoint_pose_theta }" />
+                                        <input v-model="waypoint.pose.theta" type="number" :max="2 * Math.PI + 0.1" :min="0"
+                                            :step="Math.PI / 8" />
+                                    </div>
+                                </div>
+                                <div class="horizontal">
+                                    <label>heading-accuracy</label>
+                                    <div class="vertical">
+                                        <input v-model="waypoint_heading_accuracy" type="range" :max="Math.PI + 0.1"
+                                            :min="0" :step="Math.PI / 16"
+                                            @input="() => { waypoint.heading_accuracy = +waypoint_heading_accuracy }" />
+                                        <input v-model="waypoint.heading_accuracy" type="number" :max="Math.PI + 0.1"
+                                            :min="0" :step="Math.PI / 16" />
+                                    </div>
+                                </div>
+                            </template>
                             <button type="submit" @click.prevent="() => editWaypoint(index, waypoint)"
                                 class="submit">save</button>
                         </form>
@@ -102,6 +132,14 @@
                         </button>
                     </l-popup>
                 </l-marker>
+                <l-circle v-for="(waypoint, index) in waypointList.waypoints" :key="index"
+                    :lat-lng="[waypoint.pose.x, waypoint.pose.y]" :radius="waypoint.radius" color="blue" />
+                <template v-for="(waypoint, index) in waypointList.waypoints" :key="index">
+                    <l-polyline v-if="waypoint.use_heading" color="blue" :lat-lngs="[
+                        // line through current waypoint in direction of heading
+                        [waypoint.pose.x, waypoint.pose.y],
+                        angleInUtm(waypoint.pose) as L.LatLng
+                    ]" /></template>
             </template>
         </l-map>
     </div>
@@ -109,10 +147,10 @@
   
 <script setup lang="ts">
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LControl, LMarker, LIcon, LPolyline, LTooltip, LPopup } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LControl, LMarker, LIcon, LPolyline, LTooltip, LPopup, LCircle } from "@vue-leaflet/vue-leaflet";
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from "vue";
 import L, { DragEndEvent, LatLng, type PointTuple } from "leaflet";
-import { ects_msgs, nav_msgs, std_msgs } from "@/ECTS/Types/Messages";
+import { ects_msgs, geometry_msgs, nav_msgs, std_msgs } from "@/ECTS/Types/Messages";
 import { ECTS } from "@/ECTS/ECTS";
 import ROSLIB from "roslib";
 import Quaternion from "quaternion";
@@ -125,6 +163,7 @@ import MaterialSymbolsPlayCircle from '~icons/material-symbols/play-circle';
 import MaterialSymbolsPauseCircle from '~icons/material-symbols/pause-circle';
 import SolarMapArrowLeftBold from '~icons/solar/map-arrow-left-bold';
 import EmojioneMonotoneRepeatButton from '~icons/emojione-monotone/repeat-button';
+import { circle } from "leaflet";
 
 const props = defineProps({
     refs: { type: Object, required: true, default: () => { } }
@@ -132,12 +171,17 @@ const props = defineProps({
 
 const el: Ref<HTMLDivElement | null> = ref(null);
 
-const zoom: Ref<number> = ref(24);
+const zoom: Ref<number> = ref(18);
 const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 
 const ects = computed(() => props.refs.get('#ects') as ECTS);
 const waypointLists = ref<string[]>([]);
 const selectedFilename = ref('');
+
+const waypoint_pose_theta = ref(0);
+const waypoint_heading_accuracy = ref(0);
+
+const swap_selected = ref(0);
 
 const waypointList = computed(() => {
     return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
@@ -276,6 +320,7 @@ const editWaypoint = (index: number, waypoint: ects_msgs.Waypoint) => {
     const utm = latLngToUtm(waypoint.pose.x, waypoint.pose.y);
     const waypointUtm = { ...waypoint, pose: { x: utm.x, y: utm.y, theta: waypoint.pose.theta } } as ects_msgs.Waypoint;
     const ects: ECTS = props.refs.get('#ects');
+    console.log(waypointUtm);
     ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/replace_waypoint', messageType: "ects/ReplaceWaypoint", }), new ROSLIB.Message({
         index_to_replace: index,
         replacement_waypoint: waypointUtm
@@ -288,6 +333,16 @@ const removeWaypoint = (index: number) => {
     ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/remove_waypoint', messageType: "ects/ReplaceWaypoint", }), new ROSLIB.Message({
         index: index,
     } as ects_msgs.RemoveWaypoint));
+};
+
+const reorderWaypoints = (from_index: number, to_index: number) => {
+    // permuitation of indices to swap from_index to to_index
+    const permutation = Array.from(Array(waypointList.value.waypoints.length).keys());
+    permutation.splice(to_index, 0, permutation.splice(from_index, 1)[0]);
+    console.log(permutation);
+    ects.value.sendMessage(new ROSLIB.Topic({ ros: ects.value.getRos(), name: '/ects/waypoints/reorder_waypoints', messageType: "ects/ReorderWaypoints", }), new ROSLIB.Message({
+        new_indices: permutation,
+    }) as ects_msgs.ReorderWaypoints);
 };
 
 watch(() => props.refs.get('/ects/control/position'), (value, oldValue) => {
@@ -320,8 +375,15 @@ const utmToLatLng = (x: number, y: number) => {
 const latLngToUtm = (lat: number, lng: number) => {
     const latlng = new L.LatLng(lat, lng);
     const utm = latlng.utm(32, false);
-    console.log(latlng.lat, latlng.lng); console.log(utm.x, utm.y);
     return utm;
+};
+
+const angleInUtm = (pose: geometry_msgs.Pose2D) => {
+    const utm = latLngToUtm(pose.x, pose.y);
+    utm.x += Math.cos(pose.theta) * 8;
+    utm.y += Math.sin(pose.theta) * 8;
+    const latLng = utmToLatLng(utm.x, utm.y);
+    return latLng;
 };
 
 const observer = new IntersectionObserver(() => {
@@ -436,7 +498,32 @@ button.floating:hover {
     background-color: rgb(105, 72, 1);
 }
 
-.locate {
+.center {
     background-color: red;
+}
+
+.center.inactive {
+    background-color: lightgray;
+}
+
+.popup-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 }
 </style>
