@@ -4,3 +4,4 @@ export const localStorageLoad = (key: string): any | null => {
     const value = JSON.parse(json);
     return value;
 };
+

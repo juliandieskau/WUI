@@ -1,7 +1,7 @@
 import ROSLIB from 'roslib';
 import { Component, defineAsyncComponent, markRaw, reactive, ref, type Ref } from 'vue';
 import type { ECTSPlugin } from './ECTSPlugin';
-import { ects_msgs, geometry_msgs, nav_msgs, sensor_msgs, std_msgs } from './Types/Messages';
+import { ects_msgs, nav_msgs, sensor_msgs, std_msgs } from './Types/Messages';
 export class ECTS {
     private ros: ROSLIB.Ros;
     private name: Ref<string> = ref("");
@@ -203,10 +203,12 @@ export class ECTS {
             } else if (topicName === "/ects/waypoints/waypoint_list") {
                 const waypoints: ects_msgs.WaypointList = {
                     name: 'list', waypoints: [
-                        { name: "ROBDEKON", pose: { x: 49.01599242886085, y: 8.426672104556637, theta: 0 }, radius: 0.5, heading_accuracy: 0.1, use_heading: true, wait_time: 30 },
+                        { name: "ROBDEKON", pose: { x: 49.01599242886085, y: 8.426672104556637, theta: 0 }, radius: 0.5, heading_accuracy: 0.1, use_heading: true, wait_time: 30, },
                         { name: "Parkplatz", pose: { x: 49.01469739913717, y: 8.426888384587954, theta: 0 }, radius: 0.1, heading_accuracy: 0.1, use_heading: false, wait_time: 0 },
                         { name: "IOSB", pose: { x: 49.01545445005395, y: 8.425802859938, theta: 0 }, radius: 1.0, heading_accuracy: 0.5, use_heading: true, wait_time: 0 },
-                    ]
+                    ],
+                    total_length: 0,
+                    cyclic: false
                 };
                 let iteration = 0;
                 setTimeout(() => {

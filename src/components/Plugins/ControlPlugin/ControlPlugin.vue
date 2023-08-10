@@ -41,7 +41,7 @@ import MaterialSymbolsArrowUpwardAlt from '~icons/material-symbols/arrow-upward-
 import MaterialSymbolsArrowDownwardAlt from '~icons/material-symbols/arrow-downward-alt';
 
 
-const CONTROL_TOPIC = "/turtle1/cmd_vel";
+const CONTROL_TOPIC = "/ects/control/cmd";
 
 const props = defineProps({
     refs: { type: Map<string, ROSLIB.Message>, required: false, default: () => { } }
