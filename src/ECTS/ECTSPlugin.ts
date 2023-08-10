@@ -28,6 +28,7 @@ export abstract class ECTSPlugin {
             const path = this.path.split('/');
             path.pop();
             const absolutePath = `${path.join('/')}/${componentName}`;
+            console.log(absolutePath);
             try {
                 if (active) await glayout.addGLComponentWithRef(this, absolutePath);
                 else glayout.addRefWithoutComponent(this, absolutePath);
