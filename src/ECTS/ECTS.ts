@@ -87,7 +87,8 @@ export class ECTS {
         plugin.topics.forEach((messageType, topic) => this.registerListener(plugin, topic, messageType));
         const path = plugin.path.split('/');
         path.pop();
-        const pathString = `${path.join('/')}/${path[path.length - 1]}Footer.vue`;
+        const pluginName = path.pop();
+        const pathString = `../components/Plugins/${pluginName}/${pluginName}Footer.vue`;
         this.footer.set(plugin, markRaw(defineAsyncComponent(
             () => import(pathString)
                 .catch(() => { this.footer.delete(plugin); }))));
