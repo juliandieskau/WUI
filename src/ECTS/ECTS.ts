@@ -87,10 +87,9 @@ export class ECTS {
         plugin.topics.forEach((messageType, topic) => this.registerListener(plugin, topic, messageType));
         const path = plugin.path.split('/');
         path.pop();
-        const pluginName = path.pop();
-        const pathString = `../components/Plugins/${pluginName}/${pluginName}Footer.vue`;
+        const pluginName = path.pop()?.slice(0, -6);
         this.footer.set(plugin, markRaw(defineAsyncComponent(
-            () => import(pathString)
+            () => import(`../components/Plugins/${pluginName}Plugin/${pluginName}PluginFooter.vue`)
                 .catch(() => { this.footer.delete(plugin); }))));
     }
     deactivatePlugin(plugin: ECTSPlugin) {

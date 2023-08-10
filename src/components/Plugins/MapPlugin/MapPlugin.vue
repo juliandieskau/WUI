@@ -30,7 +30,7 @@
                     <MaterialSymbolsPlayCircle />
                 </button>
                 <button @click="toggleRepeat" title="repeat" class="floating repeat"
-                    :class="waypointList.cyclic ? 'active' : 'inactive'">
+                    :class="waypointList?.cyclic ? 'active' : 'inactive'">
                     <EmojioneMonotoneRepeatButton />
                 </button>
             </l-control>

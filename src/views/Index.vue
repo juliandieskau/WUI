@@ -22,6 +22,7 @@ const reload = () => {
 };
 
 const addConnection = (url: string) => {
+    console.log("Adding connection: ", url);
     if (!urls.find(u => u == url)) urls.push(url);
     else console.error("URL already exists: ", url);
 };
