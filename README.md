@@ -1,8 +1,9 @@
 # Hosting the Website
 
-1. Build Project like it says below
-2. copy build folder content into ./src folder on the server
-3. ```docker-compose up -d``` to start server 
+1. Copy docker-compose.yml & nginx.conf into any ./folder on the host
+2. Build Project like it says below
+3. upload /dist content into ./folder/src folder on the host
+4. ```docker-compose up -d``` to start server 
 
 
 # ects-web
