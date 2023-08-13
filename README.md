@@ -1,3 +1,10 @@
+# Hosting the Website
+
+1. Build Project like it says below
+2. copy build folder content into ./src folder on the server
+3. ```sh docker-compose up -d``` to start server 
+
+
 # ects-web
 
 This template should help get you started developing with Vue 3 in Vite.
