@@ -2,7 +2,7 @@
 
 1. Build Project like it says below
 2. copy build folder content into ./src folder on the server
-3. ```sh docker-compose up -d``` to start server 
+3. ```docker-compose up -d``` to start server 
 
 
 # ects-web
