@@ -56,13 +56,13 @@ onUnmounted(() => {
 	GLayout.clear();
 });
 
-const saveLayout = () => {
+function saveLayout() {
 	console.log("saving layout");
 	const layout = GLayout.saveLayout();
 	localStorage.setItem("layout", JSON.stringify(layout));
 };
 
-const loadLayout = () => {
+function loadLayout() {
 	console.log("loading layout");
 	const layout: LayoutConfig = localStorageLoad("layout");
 	if (!layout) return;
@@ -70,18 +70,18 @@ const loadLayout = () => {
 	loadGLLayout(layout);
 };
 
-const addRefWithoutComponent = (plugin: ECTSPlugin, path: string) => {
+function addRefWithoutComponent(plugin: ECTSPlugin, path: string) {
 	let ref: Map<string, any> = plugin.data;
 	Refs.value.set(path, ref);
 };
 
-const addGLComponentWithRef = async (plugin: ECTSPlugin, path: string) => {
+async function addGLComponentWithRef(plugin: ECTSPlugin, path: string) {
 	addRefWithoutComponent(plugin, path);
 	let index = await addGLComponent(path, plugin.humanName);
 	if (index == null) throw new ComponentExistsError("Component already exists");
 };
 
-const addGLComponent = async (path: string, title: string) => {
+async function addGLComponent(path: string, title: string) {
 	const pathSplit = path.split("/");
 	const componentType = pathSplit.pop() as string;
 	const pluginName = pathSplit.pop() as string;
@@ -97,9 +97,9 @@ const addGLComponent = async (path: string, title: string) => {
 	return index;
 };
 
-const loadGLLayout = async (
+async function loadGLLayout(
 	layoutConfig: LayoutConfig | ResolvedLayoutConfig,
-) => {
+) {
 	const config = (
 		((layoutConfig as ResolvedLayoutConfig).resolved)
 			? LayoutConfig.fromResolved(layoutConfig as ResolvedLayoutConfig)
@@ -151,7 +151,7 @@ const loadGLLayout = async (
 	GLayout.loadLayout(config);
 };
 
-const addComponent = (path: string, title: string) => {
+function addComponent(path: string, title: string) {
 	const pathSplit = path.split("/");
 	const componentType = pathSplit.pop() as string;
 	const pluginName = pathSplit.pop() as string;

@@ -13,9 +13,11 @@ const props = defineProps({
 
 const GLComponent = ref<null | HTMLElement>(null);
 
-const numberToPixels = (value: number): string => `${value.toString(10)}px`;
+function numberToPixels(value: number): string {
+	return `${value.toString(10)}px`;
+};
 
-const setPosAndSize = (left: number, top: number, width: number, height: number): void => {
+function setPosAndSize(left: number, top: number, width: number, height: number): void {
 	if (GLComponent.value) {
 		const el = GLComponent.value as HTMLElement;
 		el.style.left = numberToPixels(left);
@@ -26,7 +28,7 @@ const setPosAndSize = (left: number, top: number, width: number, height: number)
 	}
 };
 
-const setVisibility = (visible: boolean): void => {
+function setVisibility(visible: boolean): void {
 	if (GLComponent.value) {
 		const el = GLComponent.value as HTMLElement;
 		if (visible) {
@@ -37,7 +39,7 @@ const setVisibility = (visible: boolean): void => {
 	}
 };
 
-const setZIndex = (value: string): void => {
+function setZIndex(value: string): void {
 	if (GLComponent.value) {
 		const el = GLComponent.value as HTMLElement;
 		el.style.zIndex = value;

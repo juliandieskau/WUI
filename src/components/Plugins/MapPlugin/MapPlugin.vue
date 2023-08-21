@@ -41,22 +41,22 @@
             </l-marker>
             <template v-if="props.refs.get('#waypoint_list')">
                 <template v-if="current_waypoint_index != null">
-                    // dotted line from robot to current waypoint
+                    <!--dotted line from robot to current waypoint-->
                     <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'" dash-array="6, 8" v-if="position"
                         :lat-lngs="[[waypointList.waypoints[current_waypoint_index].pose.x, waypointList.waypoints[current_waypoint_index].pose.y], [position[0], position[1]]]" />
-                    // line from last to next waypoint
+                    <!--line from last to next waypoint-->
                     <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'"
                         :lat-lngs="waypointList.waypoints.slice(current_waypoint_index - 1, current_waypoint_index + 1).map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
-                    // line from first to current waypoint
+                    <!--line from first to current waypoint-->
                     <l-polyline color="gray"
                         :lat-lngs="waypointList.waypoints.slice(0, current_waypoint_index).map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
-                    // line from current to last waypoint
+                    <!--line from current to last waypoint-->
                     <l-polyline :color="waypoint_is_executing ? 'orange' : 'gray'"
                         :lat-lngs="waypointList.waypoints.slice(current_waypoint_index).map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
-                    // line from last to first if cyclic
+                    <!--line from last to first if cyclic-->
                 </template>
                 <template v-else>
-                    // lines between waypoints when unknown current waypoint
+                    <!--lines between waypoints when unknown current waypoint-->
                     <l-polyline :color="waypoint_is_executing ? 'green' : 'gray'"
                         :lat-lngs="waypointList.waypoints.map(waypoint => [waypoint.pose.x, waypoint.pose.y])" />
                 </template>
@@ -163,25 +163,22 @@ import MaterialSymbolsPlayCircle from '~icons/material-symbols/play-circle';
 import MaterialSymbolsPauseCircle from '~icons/material-symbols/pause-circle';
 import SolarMapArrowLeftBold from '~icons/solar/map-arrow-left-bold';
 import EmojioneMonotoneRepeatButton from '~icons/emojione-monotone/repeat-button';
-import { circle } from "leaflet";
 
 const props = defineProps({
     refs: { type: Object, required: true, default: () => { } }
 });
 
 const el: Ref<HTMLDivElement | null> = ref(null);
-
 const zoom: Ref<number> = ref(18);
 const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 
-const ects = computed(() => props.refs.get('#ects') as ECTS);
 const waypointLists = ref<string[]>([]);
 const selectedFilename = ref('');
-
 const waypoint_pose_theta = ref(0);
 const waypoint_heading_accuracy = ref(0);
-
 const swap_selected = ref(0);
+
+const ects = computed(() => props.refs.get('#ects') as ECTS);
 
 const waypointList = computed(() => {
     return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
@@ -212,47 +209,29 @@ const waypoint_is_executing = computed(() => {
     return (props.refs.get('/ects/waypoints/is_executing') as std_msgs.Bool)?.data ?? false;
 });
 
-const executeWaypoints = () => {
-    const topic = new ROSLIB.Topic({
-        ros: ects.value.getRos(),
-        name: '/ects/waypoints/execute',
-        messageType: "std_msgs/Empty"
-    });
-    ects.value.sendMessage(topic, new ROSLIB.Message({}));
-};
 
-const stopWaypoints = () => {
-    const topic = new ROSLIB.Topic({
-        ros: ects.value.getRos(),
-        name: '/ects/waypoints/stop',
-        messageType: "std_msgs/Empty"
-    });
-    ects.value.sendMessage(topic, new ROSLIB.Message({}));
-};
 
-const toggleRepeat = () => {
-    const topic = new ROSLIB.Topic({
-        ros: ects.value.getRos(),
-        name: '/ects/waypoints/repeat_waypoints',
-        messageType: "std_msgs/Bool"
-    });
-    ects.value.sendMessage(topic, new ROSLIB.Message({ data: !waypointList.value.cyclic } as std_msgs.Bool));
-};
+const observer = new IntersectionObserver(() => {
+    if (el.value?.parentElement?.style.display != 'none') {
+        window.dispatchEvent(new Event("resize"));
+    }
+});
+onMounted(() => {
+    observer.observe(el.value!);
+});
 
-const loadWaypointListDir = () => {
-    ects.value.callService('/ects/waypoints/saved_lists', 'ects/WaypointListDirectory', new ROSLIB.ServiceRequest({})).then((response) => {
-        const responseCast = response as ects_msgs.WaypointListDirectory;
-        waypointLists.value = responseCast.filenames;
-    });
-};
-
-const reset = () => {
-    waypointLists.value = [];
-    selectedFilename.value = '';
-    props.refs.set('/ects/waypoints/waypoint_list', null);
-};
+onUnmounted(() => {
+    observer.disconnect();
+});
 
 loadWaypointListDir();
+
+watch(() => props.refs.get('/ects/control/position'), (value, oldValue) => {
+    // when the robot position is received first time, center the view on it
+    if (value && !oldValue) {
+        centerViewOnRobot();
+    }
+});
 
 watch(() => props.refs.get('/ects/waypoints/waypoint_list'), (value, oldValue) => {
     if (!value && oldValue) {
@@ -261,19 +240,85 @@ watch(() => props.refs.get('/ects/waypoints/waypoint_list'), (value, oldValue) =
 });
 
 
-const loadWaypointList = (name: string) => {
+
+
+/**
+ * @description Executes the current waypoint list.
+ */
+function executeWaypoints() {
+    const topic = new ROSLIB.Topic({
+        ros: ects.value.getRos(),
+        name: '/ects/waypoints/execute',
+        messageType: "std_msgs/Empty"
+    });
+    ects.value.sendMessage(topic, new ROSLIB.Message({}));
+};
+
+/**
+ * @description Stops the current waypoint list.
+ */
+function stopWaypoints() {
+    const topic = new ROSLIB.Topic({
+        ros: ects.value.getRos(),
+        name: '/ects/waypoints/stop',
+        messageType: "std_msgs/Empty"
+    });
+    ects.value.sendMessage(topic, new ROSLIB.Message({}));
+};
+
+/**
+ * @description Toggles the cyclic property of the current waypoint list.
+ */
+function toggleRepeat() {
+    const topic = new ROSLIB.Topic({
+        ros: ects.value.getRos(),
+        name: '/ects/waypoints/repeat_waypoints',
+        messageType: "std_msgs/Bool"
+    });
+    ects.value.sendMessage(topic, new ROSLIB.Message({ data: !waypointList.value.cyclic } as std_msgs.Bool));
+};
+
+/**
+ * @description Gets the waypointList directory from disk.
+ */
+function loadWaypointListDir() {
+    ects.value.callService('/ects/waypoints/saved_lists', 'ects/WaypointListDirectory', new ROSLIB.ServiceRequest({})).then((response) => {
+        const responseCast = response as ects_msgs.WaypointListDirectory;
+        waypointLists.value = responseCast.filenames;
+    });
+};
+
+/**
+ * @description Resets the waypointList.
+ */
+function reset() {
+    waypointLists.value = [];
+    selectedFilename.value = '';
+    props.refs.set('/ects/waypoints/waypoint_list', null);
+};
+
+/**
+ * @description Loads a waypoint list from disk.
+ * @param name The name of the waypoint list to load.
+ */
+function loadWaypointList(name: string) {
     return ects.value.callService('/ects/waypoints/load_waypoint_list', 'ects/LoadWaypointList', new ROSLIB.ServiceRequest({
         filename: name
     }));
 };
-
-const saveWaypointList = (name: string) => {
+/**
+ * @description Saves a waypoint list to disk.
+ * @param name The name of the waypoint list to save.
+ */
+function saveWaypointList(name: string) {
     return ects.value.callService('/ects/waypoints/save_waypoint_list', 'ects/SaveWaypointList', new ROSLIB.ServiceRequest({
         filename: name
     }));
 };
-
-const promptWaypointListName = () => {
+/**
+ * @description Prompts the user for a name and saves the current waypoint list to disk under the new name.
+ */
+function promptWaypointListName() {
     let name = prompt("Please enter a name for the new waypoint list", "");
     if (!name?.endsWith(".waypoints")) {
         name += ".waypoints";
@@ -284,8 +329,10 @@ const promptWaypointListName = () => {
         });
     }
 };
-
-const addWaypointMiddle = () => {
+/**
+ * @description Places a new Waypoint in the middle of the screen.
+ */
+function addWaypointMiddle() {
     console.log("add waypoint", waypointList.value.waypoints.length, center.value);
     if (!waypointList.value) return;
     const ects: ECTS = props.refs.get('#ects');
@@ -306,16 +353,24 @@ const addWaypointMiddle = () => {
     console.log(message);
     ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/add_waypoint', messageType: "ects/AddWaypoint", }), new ROSLIB.Message(message));
 };
-
-const moveWaypoint = (event: DragEndEvent, index: number) => {
+/**
+ * @description DragEndEvent on a waypoint marker. Moves the waypoint to the new position
+ * @param event the event that got fired
+ * @param index the index of the waypoint to move
+ */
+function moveWaypoint(event: DragEndEvent, index: number) {
     if (!waypointList.value) return;
     const waypointLatLng = waypointList.value.waypoints[index];
     waypointLatLng.pose.x = event.target.getLatLng().lat;
     waypointLatLng.pose.y = event.target.getLatLng().lng;
     editWaypoint(index, waypointLatLng);
 };
-
-const editWaypoint = (index: number, waypoint: ects_msgs.Waypoint) => {
+/**
+ * @description Sends a message to the backend to replace a waypoint
+ * @param index the index of the waypoint to replace
+ * @param waypoint the waypoint
+ */
+function editWaypoint(index: number, waypoint: ects_msgs.Waypoint) {
     console.log("send replace waypoint", index, waypoint.pose.x, waypoint.pose.y);
     const utm = latLngToUtm(waypoint.pose.x, waypoint.pose.y);
     const waypointUtm = { ...waypoint, pose: { x: utm.x, y: utm.y, theta: waypoint.pose.theta } } as ects_msgs.Waypoint;
@@ -326,17 +381,23 @@ const editWaypoint = (index: number, waypoint: ects_msgs.Waypoint) => {
         replacement_waypoint: waypointUtm
     } as ects_msgs.ReplaceWaypoint));
 };
-
-const removeWaypoint = (index: number) => {
+/**
+ * @description removes a waypoint from the waypoint list
+ * @param index the index of the waypoint to remove
+ */
+function removeWaypoint(index: number) {
     console.log("send remove waypoint", index);
     const ects: ECTS = props.refs.get('#ects');
     ects.sendMessage(new ROSLIB.Topic({ ros: ects.getRos(), name: '/ects/waypoints/remove_waypoint', messageType: "ects/ReplaceWaypoint", }), new ROSLIB.Message({
         index: index,
     } as ects_msgs.RemoveWaypoint));
 };
-
-const reorderWaypoints = (from_index: number, to_index: number) => {
-    // permuitation of indices to swap from_index to to_index
+/**
+ * Permutes the waypointlist to move the from_index into the to_index
+ * @param from_index the index of the waypoint to move
+ * @param to_index the index which will be the new index for the waypoint
+ */
+function reorderWaypoints(from_index: number, to_index: number) {
     const permutation = Array.from(Array(waypointList.value.waypoints.length).keys());
     permutation.splice(to_index, 0, permutation.splice(from_index, 1)[0]);
     console.log(permutation);
@@ -344,41 +405,47 @@ const reorderWaypoints = (from_index: number, to_index: number) => {
         new_indices: permutation,
     }) as ects_msgs.ReorderWaypoints);
 };
-
-watch(() => props.refs.get('/ects/control/position'), (value, oldValue) => {
-    if (value && !oldValue) {
-        centerViewOnRobot();
-    }
-});
-
-
 /**
  * @description Centers the map on the coordinates and sets the zoom level to 20.
+ * @param latLng The coordinates to center the map on.
  */
-const centerView = (latLng: L.LatLng) => {
+function centerView(latLng: L.LatLng) {
     zoom.value = 20;
     center.value = [latLng.lat, latLng.lng];
 };
-
-const centerViewOnRobot = () => {
+/**
+ * @description Centers the map on the robot.
+ */
+function centerViewOnRobot() {
     console.log("center view on robot", position.value);
     if (position.value) {
         centerView({ lat: position.value[0], lng: position.value[1] } as L.LatLng);
     }
 };
-
-const utmToLatLng = (x: number, y: number) => {
+/**
+ * @description convert utm to LatLng
+ * @param x utm x
+ * @param y utm y
+ */
+function utmToLatLng(x: number, y: number) {
     const latLng = L.utm({ x: x, y: y, zone: 32, band: "U", southHemi: false }).latLng();
     return latLng;
 };
-
-const latLngToUtm = (lat: number, lng: number) => {
+/**
+ * @description convert LatLng to utm
+ * @param lat latitude
+ * @param lng longitude
+ */
+function latLngToUtm(lat: number, lng: number) {
     const latlng = new L.LatLng(lat, lng);
     const utm = latlng.utm(32, false);
     return utm;
 };
-
-const angleInUtm = (pose: geometry_msgs.Pose2D) => {
+/**
+ * @description calculates the coordinates of a point 8m in front of the robot
+ * @param pose the center of the robot
+ */
+function angleInUtm(pose: geometry_msgs.Pose2D) {
     const utm = latLngToUtm(pose.x, pose.y);
     utm.x += Math.cos(pose.theta) * 8;
     utm.y += Math.sin(pose.theta) * 8;
@@ -386,18 +453,7 @@ const angleInUtm = (pose: geometry_msgs.Pose2D) => {
     return latLng;
 };
 
-const observer = new IntersectionObserver(() => {
-    if (el.value?.parentElement?.style.display != 'none') {
-        window.dispatchEvent(new Event("resize"));
-    }
-});
-onMounted(() => {
-    observer.observe(el.value!);
-});
 
-onUnmounted(() => {
-    observer.disconnect();
-});
 </script>
   
 <style scoped>

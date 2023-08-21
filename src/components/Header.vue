@@ -16,7 +16,7 @@ const connection = computed({
     }
 });
 
-const addConnection = (url: string) => {
+function addConnection(url: string) {
     try {
         let parsed = new URL(url);
         if (parsed.protocol != "ws:") {
@@ -28,7 +28,7 @@ const addConnection = (url: string) => {
     }
 };
 
-const changeConnection = (index: number) => {
+function changeConnection(index: number) {
     if (index >= 0) emit('changeConnection', index);
 };
 
