@@ -86,7 +86,7 @@ export default class SystemPlugin extends ECTSPlugin {
             )
             .then(response => {
               this.disks = (response as ects_msgs.MountpointList).mountpoint.map(disk =>
-                disk.split('/').join('').split('.').join('')
+                '/' + disk.split('/').join('').split('.').join('')
               );
               this.data.set('#mountpoint_list', this.disks);
               this.disks.forEach(disk => {
