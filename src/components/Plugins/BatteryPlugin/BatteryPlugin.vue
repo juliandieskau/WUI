@@ -1,53 +1,100 @@
 <template>
-    <template v-if="props.refs.get('/ects/battery/usage')">
-        <div v-if="props.refs.get('/ects/battery/usage').power_supply_status == 1" class="item">
-            <material-symbols-power-plug-outline-rounded style="color: green" />
-            <span>charging</span>
-        </div>
-        <div v-if="props.refs.get('/ects/battery/usage').percentage" class="item"
-            :style="props.refs.get('/ects/battery/is_critical')?.data ? { color: 'var(--color-important)' } : {}">
-            <material-symbols-battery20-rounded v-if="props.refs.get('/ects/battery/usage').percentage > 95" />
-            <material-symbols-battery6-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 80" />
-            <material-symbols-battery5-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 65" />
-            <material-symbols-battery4-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 50" />
-            <material-symbols-battery3-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 35" />
-            <material-symbols-battery2-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 20" />
-            <material-symbols-battery1-bar-rounded v-else-if="props.refs.get('/ects/battery/usage').percentage > 5" />
-            <material-symbols-battery0-bar-rounded v-else />
-            <span>{{ props.refs.get('/ects/battery/usage').percentage }}% </span>
-            <span v-if="props.refs.get('/ects/battery/estimated_time_remaining')">
-                ({{ ((props.refs.get("/ects/battery/estimated_time_remaining").data) / 60).toFixed(1) }} min)
-            </span>
-        </div>
-        <div v-else>
-            <material-symbols-battery-unknown-rounded />
-        </div>
+  <template v-if="props.refs.get('/ects/battery/usage')">
+    <div
+      v-if="props.refs.get('/ects/battery/usage').power_supply_status == 1"
+      class="item"
+    >
+      <material-symbols-power-plug-outline-rounded style="color: green" />
+      <span>charging</span>
+    </div>
+    <div
+      v-if="props.refs.get('/ects/battery/usage').percentage"
+      class="item"
+      :style="
+        props.refs.get('/ects/battery/is_critical')?.data
+          ? { color: 'var(--color-important)' }
+          : {}
+      "
+    >
+      <material-symbols-battery20-rounded
+        v-if="props.refs.get('/ects/battery/usage').percentage > 95"
+      />
+      <material-symbols-battery6-bar-rounded
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 80"
+      />
+      <material-symbols-battery5-bar-rounded
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 65"
+      />
+      <material-symbols-battery4-bar-rounded
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 50"
+      />
+      <material-symbols-battery3-bar-rounded
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 35"
+      />
+      <material-symbols-battery2-bar-rounded
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 20"
+      />
+      <material-symbols-battery1-bar-rounded
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 5"
+      />
+      <material-symbols-battery0-bar-rounded v-else />
+      <span>{{ props.refs.get('/ects/battery/usage').percentage }}% </span>
+      <span v-if="props.refs.get('/ects/battery/estimated_time_remaining')">
+        ({{
+          (
+            props.refs.get('/ects/battery/estimated_time_remaining').data / 60
+          ).toFixed(1)
+        }}
+        min)
+      </span>
+    </div>
+    <div v-else>
+      <material-symbols-battery-unknown-rounded />
+    </div>
 
-        <div v-if="props.refs.get('/ects/battery/usage').voltage" class="item">
-            <material-symbols-electric-bolt-rounded />
-            <span>{{ props.refs.get('/ects/battery/usage').voltage.toFixed(2) }}V</span>
-        </div>
+    <div v-if="props.refs.get('/ects/battery/usage').voltage" class="item">
+      <material-symbols-electric-bolt-rounded />
+      <span
+        >{{ props.refs.get('/ects/battery/usage').voltage.toFixed(2) }}V</span
+      >
+    </div>
 
-        <div v-if="props.refs.get('/ects/battery/usage').current" class="item">
-            <material-symbols-power-input-rounded />
-            <span>{{ props.refs.get('/ects/battery/usage').current.toFixed(2) }}A</span>
-        </div>
+    <div v-if="props.refs.get('/ects/battery/usage').current" class="item">
+      <material-symbols-power-input-rounded />
+      <span
+        >{{ props.refs.get('/ects/battery/usage').current.toFixed(2) }}A</span
+      >
+    </div>
 
-        <div v-if="props.refs.get('/ects/battery/usage').charge" class="item">
-            <material-symbols-battery-change-outline-rounded />
-            <span>{{ props.refs.get('/ects/battery/usage').charge.toFixed(2) }}Ah</span>
-        </div>
+    <div v-if="props.refs.get('/ects/battery/usage').charge" class="item">
+      <material-symbols-battery-change-outline-rounded />
+      <span
+        >{{ props.refs.get('/ects/battery/usage').charge.toFixed(2) }}Ah</span
+      >
+    </div>
 
-        <div v-for="[key, value] in Object.entries(props.refs.get('/ects/battery/usage')).filter(([key, value]) => key != 'percentage' && key != 'voltage' && key != 'current' && key != 'charge' && key != 'power_supply_status' && key != 'header')"
-            :key="key" class="details">
-            <span>{{ key }}:</span>
-            <span>{{ value }}</span>
-        </div>
-    </template>
+    <div
+      v-for="[key, value] in Object.entries(
+        props.refs.get('/ects/battery/usage')
+      ).filter(
+        ([key, value]) =>
+          key != 'percentage' &&
+          key != 'voltage' &&
+          key != 'current' &&
+          key != 'charge' &&
+          key != 'power_supply_status' &&
+          key != 'header'
+      )"
+      :key="key"
+      class="details"
+    >
+      <span>{{ key }}:</span>
+      <span>{{ value }}</span>
+    </div>
+  </template>
 </template>
 
 <script setup lang="ts">
-
 import MaterialSymbolsBattery20Rounded from '~icons/material-symbols/battery-20-rounded';
 import MaterialSymbolsBatteryUnknownRounded from '~icons/material-symbols/battery-unknown-rounded';
 import MaterialSymbolsBattery6BarRounded from '~icons/material-symbols/battery-6-bar-rounded';
@@ -62,28 +109,25 @@ import MaterialSymbolsPowerInputRounded from '~icons/material-symbols/power-inpu
 import MaterialSymbolsBatteryChangeOutlineRounded from '~icons/material-symbols/battery-change-outline-rounded';
 import MaterialSymbolsPowerPlugOutlineRounded from '~icons/material-symbols/power-plug-outline-rounded';
 
-
 const props = defineProps({
-    refs: { type: Map<string, any>, required: true, default: () => { } }
+  refs: { type: Map<string, any>, required: true, default: () => {} }
 });
-
-
 </script>
 
 <style scoped>
 div {
-    font-size: 26px;
+  font-size: 26px;
 }
 
 .item {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .details {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    font-family: monospace;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-family: monospace;
 }
 </style>
