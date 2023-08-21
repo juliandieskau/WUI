@@ -5,8 +5,7 @@
       <span
         >{{
           (
-            (props.refs.get('/ects/system/cpu/usage') as ects_msgs.CpuUsage)
-              .total_usage * 100
+            (props.refs.get('/ects/system/cpu/usage') as ects_msgs.CpuUsage).total_usage * 100
           ).toFixed(1)
         }}%</span
       >
@@ -16,13 +15,8 @@
       <span
         >{{
           (
-            ((props.refs.get('/ects/system/mem/usage') as ects_msgs.MemoryUsage)
-              .used /
-              (
-                props.refs.get(
-                  '/ects/system/mem/usage'
-                ) as ects_msgs.MemoryUsage
-              ).total) *
+            ((props.refs.get('/ects/system/mem/usage') as ects_msgs.MemoryUsage).used /
+              (props.refs.get('/ects/system/mem/usage') as ects_msgs.MemoryUsage).total) *
             100
           ).toFixed(0)
         }}%</span
@@ -66,9 +60,7 @@ const totalDiskUsage = computed(() => {
   const disks = props.refs.get('#mountpoint_list');
   if (!disks) return null;
   const sum = disks.reduce((acc: number, disk: string) => {
-    const usage = props.refs.get(
-      `/ects/system/disk/${disk}/usage`
-    ) as ects_msgs.DiskUsage;
+    const usage = props.refs.get(`/ects/system/disk/${disk}/usage`) as ects_msgs.DiskUsage;
     if (!usage) return acc;
     return acc + (usage.used / usage.size_total) * 100;
   }, 0);
@@ -79,9 +71,7 @@ const totalDiskUsage = computed(() => {
 const wifiSignalStrength = computed(() => {
   const network_adapters = props.refs.get('#network_adapters');
   if (!network_adapters) return null;
-  const wifi_adapter_name = network_adapters.find((adapter: string) =>
-    adapter.startsWith('wl')
-  );
+  const wifi_adapter_name = network_adapters.find((adapter: string) => adapter.startsWith('wl'));
   if (!wifi_adapter_name) return null;
   const usage = props.refs.get(
     `/ects/system/network/${wifi_adapter_name}/usage`
@@ -90,9 +80,7 @@ const wifiSignalStrength = computed(() => {
 });
 
 const wifiSsid = computed(() => {
-  const network_adapters = props.refs.get(
-    '#network_adapters'
-  ) as ects_msgs.AdapterList;
+  const network_adapters = props.refs.get('#network_adapters') as ects_msgs.AdapterList;
   const wifi_adapter_name = network_adapters.adapters.find((adapter: string) =>
     adapter.startsWith('w')
   );

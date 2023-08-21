@@ -19,13 +19,7 @@ const props = defineProps({
   options: { type: Object, default: () => {} }
 });
 
-Chart.register(
-  BarController,
-  BarElement,
-  LinearScale,
-  CategoryScale,
-  PointElement
-);
+Chart.register(BarController, BarElement, LinearScale, CategoryScale, PointElement);
 </script>
 
 <style scoped></style>

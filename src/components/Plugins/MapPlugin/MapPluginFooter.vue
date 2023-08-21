@@ -4,8 +4,7 @@
       <CodiconActivateBreakpoints :style="is_executing ? 'color: green' : ''" />
       <span>
         {{ waypointList.name }}
-        [{{ current_waypoint_index ?? '?' }} /
-        {{ waypointList.waypoints.length }}]
+        [{{ current_waypoint_index ?? '?' }} / {{ waypointList.waypoints.length }}]
       </span>
     </div>
     <div>
@@ -26,23 +25,17 @@ const props = defineProps({
 });
 
 const waypointList = computed(() => {
-  return props.refs.get(
-    '/ects/waypoints/waypoint_list'
-  ) as ects_msgs.WaypointList;
+  return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
 });
 
 const current_waypoint_index = computed(() => {
-  const index = (
-    props.refs.get('/ects/waypoints/current_waypoint') as std_msgs.UInt32
-  )?.data;
-  if (index == null || index >= waypointList.value.waypoints.length)
-    return null;
+  const index = (props.refs.get('/ects/waypoints/current_waypoint') as std_msgs.UInt32)?.data;
+  if (index == null || index >= waypointList.value.waypoints.length) return null;
   return index;
 });
 
 const is_executing = computed(() => {
-  return (props.refs.get('/ects/waypoints/is_executing') as std_msgs.Bool)
-    ?.data;
+  return (props.refs.get('/ects/waypoints/is_executing') as std_msgs.Bool)?.data;
 });
 </script>
 

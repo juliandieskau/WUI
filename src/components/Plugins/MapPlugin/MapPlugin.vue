@@ -5,90 +5,58 @@
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         layer-type="base"
         name="OpenStreetMap"
-        :max-zoom="19"
-      ></l-tile-layer>
+        :max-zoom="19"></l-tile-layer>
       <l-control position="bottomleft">
         <button
           @click="centerViewOnRobot()"
           title="center view"
           class="floating center"
-          :class="position ? 'active' : 'inactive'"
-        >
+          :class="position ? 'active' : 'inactive'">
           <IonMdLocate />
         </button>
       </l-control>
       <l-control position="topright">
         <select v-model="selectedFilename">
           <option></option>
-          <option
-            v-for="filename in waypointLists"
-            :key="filename"
-            :value="filename"
-          >
+          <option v-for="filename in waypointLists" :key="filename" :value="filename">
             {{ filename }}
           </option>
         </select>
-        <button
-          v-if="selectedFilename"
-          @click="loadWaypointList(selectedFilename)"
-        >
+        <button v-if="selectedFilename" @click="loadWaypointList(selectedFilename)">
           Load selected
         </button>
-        <button
-          v-if="selectedFilename"
-          @click="saveWaypointList(selectedFilename)"
-        >
+        <button v-if="selectedFilename" @click="saveWaypointList(selectedFilename)">
           Save selected
         </button>
-        <button v-if="!selectedFilename" @click="promptWaypointListName()">
-          new list
-        </button>
+        <button v-if="!selectedFilename" @click="promptWaypointListName()">new list</button>
       </l-control>
       <l-control position="bottomright">
-        <button
-          @click="addWaypointMiddle"
-          title="add waypoint"
-          class="floating addwp"
-        >
+        <button @click="addWaypointMiddle" title="add waypoint" class="floating addwp">
           <IcSharpAddLocationAlt />
         </button>
         <button
           @click="stopWaypoints"
           title="stop"
           class="floating pause"
-          v-if="waypoint_is_executing"
-        >
+          v-if="waypoint_is_executing">
           <MaterialSymbolsPauseCircle />
         </button>
-        <button
-          @click="executeWaypoints"
-          title="start"
-          class="floating play"
-          v-else
-        >
+        <button @click="executeWaypoints" title="start" class="floating play" v-else>
           <MaterialSymbolsPlayCircle />
         </button>
         <button
           @click="toggleRepeat"
           title="repeat"
           class="floating repeat"
-          :class="waypointList?.cyclic ? 'active' : 'inactive'"
-        >
+          :class="waypointList?.cyclic ? 'active' : 'inactive'">
           <EmojioneMonotoneRepeatButton />
         </button>
       </l-control>
-      <l-marker
-        v-if="props.refs.get('/ects/control/position')"
-        :lat-lng="position!"
-      >
-        <l-icon
-          style="background-color: transparent; border: 0"
-          :icon-anchor="[18, 20]"
-        >
+      <l-marker v-if="props.refs.get('/ects/control/position')" :lat-lng="position!">
+        <l-icon style="background-color: transparent; border: 0" :icon-anchor="[18, 20]">
           <SolarMapArrowLeftBold
             style="color: red; font-size: 3em"
-            :style="`transform: rotate(${angle}rad)`"
-          />
+            :style="`transform: rotate(${angle}rad)`" />
         </l-icon>
       </l-marker>
       <template v-if="props.refs.get('#waypoint_list')">
@@ -104,8 +72,7 @@
                 waypointList.waypoints[current_waypoint_index].pose.y
               ],
               [position[0], position[1]]
-            ]"
-          />
+            ]" />
           <!--line from last to next waypoint-->
           <l-polyline
             :color="waypoint_is_executing ? 'green' : 'gray'"
@@ -113,8 +80,7 @@
               waypointList.waypoints
                 .slice(current_waypoint_index - 1, current_waypoint_index + 1)
                 .map(waypoint => [waypoint.pose.x, waypoint.pose.y])
-            "
-          />
+            " />
           <!--line from first to current waypoint-->
           <l-polyline
             color="gray"
@@ -122,8 +88,7 @@
               waypointList.waypoints
                 .slice(0, current_waypoint_index)
                 .map(waypoint => [waypoint.pose.x, waypoint.pose.y])
-            "
-          />
+            " />
           <!--line from current to last waypoint-->
           <l-polyline
             :color="waypoint_is_executing ? 'orange' : 'gray'"
@@ -131,8 +96,7 @@
               waypointList.waypoints
                 .slice(current_waypoint_index)
                 .map(waypoint => [waypoint.pose.x, waypoint.pose.y])
-            "
-          />
+            " />
           <!--line from last to first if cyclic-->
         </template>
         <template v-else>
@@ -140,12 +104,8 @@
           <l-polyline
             :color="waypoint_is_executing ? 'green' : 'gray'"
             :lat-lngs="
-              waypointList.waypoints.map(waypoint => [
-                waypoint.pose.x,
-                waypoint.pose.y
-              ])
-            "
-          />
+              waypointList.waypoints.map(waypoint => [waypoint.pose.x, waypoint.pose.y])
+            " />
         </template>
         <l-polyline
           color="gray"
@@ -157,15 +117,13 @@
               waypointList.waypoints[waypointList.waypoints.length - 1].pose.y
             ],
             [waypointList.waypoints[0].pose.x, waypointList.waypoints[0].pose.y]
-          ]"
-        />
+          ]" />
         <l-marker
           v-for="(waypoint, index) in waypointList.waypoints"
           :key="index"
           :lat-lng="[waypoint.pose.x, waypoint.pose.y]"
           draggable
-          @dragend="event => moveWaypoint(event, index)"
-        >
+          @dragend="event => moveWaypoint(event, index)">
           <l-tooltip>
             <h2>{{ waypoint.name }} ({{ index }})</h2>
             <br />
@@ -181,14 +139,12 @@
                 <label>swap to</label>
                 <select
                   v-model="swap_selected"
-                  @change="() => reorderWaypoints(swap_selected, index)"
-                >
+                  @change="() => reorderWaypoints(swap_selected, index)">
                   <option
                     v-for="(_, swap_index) in waypointList.waypoints"
                     :key="swap_index"
                     :value="swap_index"
-                    :selected="swap_index == index"
-                  >
+                    :selected="swap_index == index">
                     {{ swap_index }}
                   </option>
                 </select>
@@ -225,15 +181,13 @@
                         () => {
                           waypoint.pose.theta = +waypoint_pose_theta;
                         }
-                      "
-                    />
+                      " />
                     <input
                       v-model="waypoint.pose.theta"
                       type="number"
                       :max="2 * Math.PI + 0.1"
                       :min="0"
-                      :step="Math.PI / 8"
-                    />
+                      :step="Math.PI / 8" />
                   </div>
                 </div>
                 <div class="horizontal">
@@ -247,34 +201,26 @@
                       :step="Math.PI / 16"
                       @input="
                         () => {
-                          waypoint.heading_accuracy =
-                            +waypoint_heading_accuracy;
+                          waypoint.heading_accuracy = +waypoint_heading_accuracy;
                         }
-                      "
-                    />
+                      " />
                     <input
                       v-model="waypoint.heading_accuracy"
                       type="number"
                       :max="Math.PI + 0.1"
                       :min="0"
-                      :step="Math.PI / 16"
-                    />
+                      :step="Math.PI / 16" />
                   </div>
                 </div>
               </template>
               <button
                 type="submit"
                 @click.prevent="() => editWaypoint(index, waypoint)"
-                class="submit"
-              >
+                class="submit">
                 save
               </button>
             </form>
-            <button
-              type="button"
-              @click.prevent="() => removeWaypoint(index)"
-              class="delete"
-            >
+            <button type="button" @click.prevent="() => removeWaypoint(index)" class="delete">
               <MaterialSymbolsDeleteForever />
             </button>
           </l-popup>
@@ -284,12 +230,8 @@
           :key="index"
           :lat-lng="[waypoint.pose.x, waypoint.pose.y]"
           :radius="waypoint.radius"
-          color="blue"
-        />
-        <template
-          v-for="(waypoint, index) in waypointList.waypoints"
-          :key="index"
-        >
+          color="blue" />
+        <template v-for="(waypoint, index) in waypointList.waypoints" :key="index">
           <l-polyline
             v-if="waypoint.use_heading"
             color="blue"
@@ -319,12 +261,7 @@ import {
 } from '@vue-leaflet/vue-leaflet';
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import L, { DragEndEvent, LatLng, type PointTuple } from 'leaflet';
-import {
-  ects_msgs,
-  geometry_msgs,
-  nav_msgs,
-  std_msgs
-} from '@/ECTS/Types/Messages';
+import { ects_msgs, geometry_msgs, nav_msgs, std_msgs } from '@/ECTS/Types/Messages';
 import { ECTS } from '@/ECTS/ECTS';
 import ROSLIB from 'roslib';
 import Quaternion from 'quaternion';
@@ -355,18 +292,13 @@ const swap_selected = ref(0);
 const ects = computed(() => props.refs.get('#ects') as ECTS);
 
 const waypointList = computed(() => {
-  return props.refs.get(
-    '/ects/waypoints/waypoint_list'
-  ) as ects_msgs.WaypointList;
+  return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
 });
 
 const position = computed(() => {
   const pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
   if (!pos) return null;
-  const latLng = utmToLatLng(
-    pos.pose.pose.position.x,
-    pos.pose.pose.position.y
-  );
+  const latLng = utmToLatLng(pos.pose.pose.position.x, pos.pose.pose.position.y);
   return [latLng.lat, latLng.lng] as PointTuple;
 });
 
@@ -384,19 +316,13 @@ const angle = computed(() => {
 });
 
 const current_waypoint_index = computed(() => {
-  const index = (
-    props.refs.get('/ects/waypoints/current_waypoint') as std_msgs.UInt32
-  )?.data;
-  if (index == null || index >= waypointList.value.waypoints?.length!)
-    return null;
+  const index = (props.refs.get('/ects/waypoints/current_waypoint') as std_msgs.UInt32)?.data;
+  if (index == null || index >= waypointList.value.waypoints?.length!) return null;
   return index;
 });
 
 const waypoint_is_executing = computed(() => {
-  return (
-    (props.refs.get('/ects/waypoints/is_executing') as std_msgs.Bool)?.data ??
-    false
-  );
+  return (props.refs.get('/ects/waypoints/is_executing') as std_msgs.Bool)?.data ?? false;
 });
 
 const observer = new IntersectionObserver(() => {
@@ -541,11 +467,7 @@ function promptWaypointListName() {
  * @description Places a new Waypoint in the middle of the screen.
  */
 function addWaypointMiddle() {
-  console.log(
-    'add waypoint',
-    waypointList.value.waypoints.length,
-    center.value
-  );
+  console.log('add waypoint', waypointList.value.waypoints.length, center.value);
   if (!waypointList.value) return;
   const ects: ECTS = props.refs.get('#ects');
   const utm = latLngToUtm(
@@ -637,9 +559,7 @@ function removeWaypoint(index: number) {
  * @param to_index the index which will be the new index for the waypoint
  */
 function reorderWaypoints(from_index: number, to_index: number) {
-  const permutation = Array.from(
-    Array(waypointList.value.waypoints.length).keys()
-  );
+  const permutation = Array.from(Array(waypointList.value.waypoints.length).keys());
   permutation.splice(to_index, 0, permutation.splice(from_index, 1)[0]);
   console.log(permutation);
   ects.value.sendMessage(

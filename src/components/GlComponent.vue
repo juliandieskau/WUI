@@ -17,12 +17,7 @@ function numberToPixels(value: number): string {
   return `${value.toString(10)}px`;
 }
 
-function setPosAndSize(
-  left: number,
-  top: number,
-  width: number,
-  height: number
-): void {
+function setPosAndSize(left: number, top: number, width: number, height: number): void {
   if (GLComponent.value) {
     const el = GLComponent.value as HTMLElement;
     el.style.left = numberToPixels(left);

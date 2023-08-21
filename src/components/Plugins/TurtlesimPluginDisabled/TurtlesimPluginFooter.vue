@@ -2,9 +2,7 @@
   <div>
     <div>
       <material-symbols-rotate-90-degrees-cw-outline style="font-size: 2em" />
-      <span>{{
-        (refs.get('turtle1/pose') as TurtlesimPose)?.theta?.toFixed(2)
-      }}</span>
+      <span>{{ (refs.get('turtle1/pose') as TurtlesimPose)?.theta?.toFixed(2) }}</span>
     </div>
   </div>
 </template>

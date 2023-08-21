@@ -9,9 +9,7 @@ export abstract class ECTSPlugin {
   path: string = 'src/components/Plugins/ECTSPlugin.vue';
   humanName: string = 'ECTS Plugin';
   topics: Map<string, string> = new Map();
-  data: Map<string, ROSLIB.Message> = reactive(
-    new Map<string, ROSLIB.Message>()
-  );
+  data: Map<string, ROSLIB.Message> = reactive(new Map<string, ROSLIB.Message>());
   componentNames: string[] = [];
   ects: ECTS;
 
@@ -31,9 +29,9 @@ export abstract class ECTSPlugin {
   }
   initWindows(glayout: InstanceType<typeof Glayout>, active: boolean): void {
     console.log(
-      `init ${this.name} (${this.componentNames.length}c  ${
-        this.topics.size
-      }t) ${active ? 'active' : 'inactive'}`
+      `init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t) ${
+        active ? 'active' : 'inactive'
+      }`
     );
     this.componentNames.forEach(async componentName => {
       const path = this.path.split('/');
@@ -45,9 +43,7 @@ export abstract class ECTSPlugin {
         else glayout.addRefWithoutComponent(this, absolutePath);
       } catch (e) {
         if (e instanceof ComponentExistsError) {
-          console.log(
-            `Component ${componentName} already exists in the layout. skipping`
-          );
+          console.log(`Component ${componentName} already exists in the layout. skipping`);
         }
       }
     });

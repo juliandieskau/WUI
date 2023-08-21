@@ -1,15 +1,9 @@
 <template>
   <div>
-    <div
-      v-if="props.refs.get('#control-active') == 'gamepad'"
-      style="color: green"
-    >
+    <div v-if="props.refs.get('#control-active') == 'gamepad'" style="color: green">
       <GgController />
     </div>
-    <div
-      v-else-if="props.refs.get('#control-active') == 'buttons'"
-      style="color: green"
-    >
+    <div v-else-if="props.refs.get('#control-active') == 'buttons'" style="color: green">
       <MaterialSymbolsControlCamera />
     </div>
     <div v-else>

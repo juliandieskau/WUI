@@ -1,8 +1,5 @@
 <template>
-  <template
-    v-for="[topic, message] in (props.refs as Map<string, any>)"
-    :key="topic"
-  >
+  <template v-for="[topic, message] in (props.refs as Map<string, any>)" :key="topic">
     <template v-if="topic != '#ects'">
       <h1>Turtlesim</h1>
       <span class="key"> {{ topic }}: </span>
