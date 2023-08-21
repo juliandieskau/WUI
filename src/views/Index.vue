@@ -76,23 +76,18 @@ watch(index, value => {
     @sidebarClose="sidebar_extended = false"
     @clearLayout="clearLayout"
     @clearUrls="clearUrls"
-    @removeConnection="removeConnection"
-  />
+    @removeConnection="removeConnection" />
   <div class="flex">
     <Header
       :index="index"
       :urls="urls"
       @changeConnection="changeConnection"
       @sidebarOpen="sidebar_extended = true"
-      @addConnection="addConnection"
-    />
+      @addConnection="addConnection" />
     <Main :ects="connection" :key="reloadCounter" />
     <Footer :ects="connection" />
   </div>
-  <div
-    class="mode"
-    :class="[connection.getStatus().value, connection.getMode()]"
-  >
+  <div class="mode" :class="[connection.getStatus().value, connection.getMode()]">
     <div v-if="connection.getMode() == 'mock'">
       {{
         connection.getStatus().value == 'error'

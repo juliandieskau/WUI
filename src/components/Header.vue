@@ -42,20 +42,14 @@ import { computed, ref } from 'vue';
 
 <template>
   <header>
-    <button
-      title="Menu"
-      id="sidebar-btn"
-      @click="emit('sidebarOpen')"
-      type="button"
-    >
+    <button title="Menu" id="sidebar-btn" @click="emit('sidebarOpen')" type="button">
       <material-symbols-menu style="font-size: 2em" />
     </button>
     <select
       id="select-robot"
       v-model="connection"
       title="select connection"
-      placeholder="add robot"
-    >
+      placeholder="add robot">
       <option v-for="url in urls" :key="url">
         {{ url }}
       </option>
@@ -64,24 +58,11 @@ import { computed, ref } from 'vue';
       id="add-robot-btn"
       @click="expanded = !expanded"
       title="add new connection"
-      type="button"
-    >
-      <material-symbols-add-circle
-        style="font-size: 2em"
-        :class="expanded ? 'rotated' : {}"
-      />
+      type="button">
+      <material-symbols-add-circle style="font-size: 2em" :class="expanded ? 'rotated' : {}" />
     </button>
-    <form
-      :class="expanded ? {} : 'hidden'"
-      class="add-robot"
-      @submit.prevent="addConnection(url)"
-    >
-      <input
-        type="text"
-        placeholder="ECTS URL"
-        v-model="url"
-        :disabled="!expanded"
-      />
+    <form :class="expanded ? {} : 'hidden'" class="add-robot" @submit.prevent="addConnection(url)">
+      <input type="text" placeholder="ECTS URL" v-model="url" :disabled="!expanded" />
       <button type="submit" :disabled="!expanded"><ic-round-check /></button>
     </form>
   </header>

@@ -1,9 +1,7 @@
 <template>
   <div v-if="props.refs.get('/ects/battery/usage')">
     <div v-if="props.refs.get('/ects/battery/usage').power_supply_status == 1">
-      <material-symbols-power-plug-outline-rounded
-        style="color: green; font-size: 1.5em"
-      />
+      <material-symbols-power-plug-outline-rounded style="color: green; font-size: 1.5em" />
     </div>
     <div
       v-if="props.refs.get('/ects/battery/usage').percentage"
@@ -11,37 +9,25 @@
         props.refs.get('/ects/battery/is_critical')?.data
           ? { color: 'var(--color-important) !important' }
           : {}
-      "
-    >
+      ">
       <material-symbols-battery20-rounded
-        v-if="props.refs.get('/ects/battery/usage').percentage > 95"
-      />
+        v-if="props.refs.get('/ects/battery/usage').percentage > 95" />
       <material-symbols-battery6-bar-rounded
-        v-else-if="props.refs.get('/ects/battery/usage').percentage > 80"
-      />
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 80" />
       <material-symbols-battery5-bar-rounded
-        v-else-if="props.refs.get('/ects/battery/usage').percentage > 65"
-      />
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 65" />
       <material-symbols-battery4-bar-rounded
-        v-else-if="props.refs.get('/ects/battery/usage').percentage > 50"
-      />
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 50" />
       <material-symbols-battery3-bar-rounded
-        v-else-if="props.refs.get('/ects/battery/usage').percentage > 35"
-      />
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 35" />
       <material-symbols-battery2-bar-rounded
-        v-else-if="props.refs.get('/ects/battery/usage').percentage > 20"
-      />
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 20" />
       <material-symbols-battery1-bar-rounded
-        v-else-if="props.refs.get('/ects/battery/usage').percentage > 5"
-      />
+        v-else-if="props.refs.get('/ects/battery/usage').percentage > 5" />
       <material-symbols-battery0-bar-rounded v-else />
       {{ props.refs.get('/ects/battery/usage').percentage }}%
       <span v-if="props.refs.get('/ects/battery/estimated_time_remaining')">
-        ({{
-          (
-            props.refs.get('/ects/battery/estimated_time_remaining').data / 60
-          ).toFixed(1)
-        }}
+        ({{ (props.refs.get('/ects/battery/estimated_time_remaining').data / 60).toFixed(1) }}
         min)
       </span>
     </div>

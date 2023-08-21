@@ -13,8 +13,7 @@ const props = defineProps({
         return ects.getPlugins().get(plugin);
       })"
       :key="plugin.name"
-      class="plugin"
-    >
+      class="plugin">
       <component :is="value" class="footer-item" :refs="plugin.data" />
     </div>
   </footer>

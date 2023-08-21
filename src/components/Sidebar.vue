@@ -24,22 +24,15 @@ const emit = defineEmits(['clearLayout', 'clearUrls', 'sidebarClose']);
       </button>
     </div>
     <div id="sidebar-main">
-      <div
-        v-for="([plugin, active], index) in ects.getPlugins()"
-        :key="index"
-        class="plugin"
-      >
+      <div v-for="([plugin, active], index) in ects.getPlugins()" :key="index" class="plugin">
         <div :class="active ? 'active' : 'inactive'" class="name">
           {{ plugin.humanName }}
         </div>
         <button
-          @click="
-            active ? ects.deactivatePlugin(plugin) : ects.activatePlugin(plugin)
-          "
+          @click="active ? ects.deactivatePlugin(plugin) : ects.activatePlugin(plugin)"
           class="eye"
           :title="active ? 'disable' : 'enable'"
-          type="button"
-        >
+          type="button">
           <mdi-eye-outline v-if="active" />
           <mdi-eye-off-outline v-else style="color: var(--color-important)" />
         </button>
@@ -48,9 +41,7 @@ const emit = defineEmits(['clearLayout', 'clearUrls', 'sidebarClose']);
     </div>
     <div id="sidebar-bottom">
       <button class="clear" @click="$emit('clearLayout')">reset layout</button>
-      <button class="clear" @click="$emit('clearUrls')">
-        clear saved urls
-      </button>
+      <button class="clear" @click="$emit('clearUrls')">clear saved urls</button>
       <button @click="$emit('removeConnection')">remove connection</button>
     </div>
   </div>

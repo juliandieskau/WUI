@@ -8,8 +8,7 @@
         v-for="[key, [component, path]] in AllComponents"
         :key="key"
         :ref="GlcKeyPrefix + key"
-        class="gl-component-container"
-      >
+        class="gl-component-container">
         <component :is="component" :refs="Refs.get(path)"></component>
       </gl-component>
     </div>
@@ -23,14 +22,7 @@ const props = defineProps({
   }
 });
 
-import {
-  defineAsyncComponent,
-  getCurrentInstance,
-  markRaw,
-  onUnmounted,
-  readonly,
-  ref
-} from 'vue';
+import { defineAsyncComponent, getCurrentInstance, markRaw, onUnmounted, readonly, ref } from 'vue';
 import GlComponent from './GlComponent.vue';
 import { ComponentContainer, VirtualLayout } from 'golden-layout';
 import { nextTick } from 'vue';
@@ -113,11 +105,7 @@ async function addGLComponent(path: string, title: string) {
 
   await nextTick(); // wait 1 tick for vue to add the dom
 
-  GLayout.addComponent(
-    componentType,
-    { refId: index, path: path, enabled: true },
-    title
-  );
+  GLayout.addComponent(componentType, { refId: index, path: path, enabled: true }, title);
   return index;
 }
 
@@ -143,13 +131,11 @@ async function loadGLLayout(layoutConfig: LayoutConfig | ResolvedLayoutConfig) {
       | ComponentItemConfig[];
     for (let itemConfig of content) {
       if (itemConfig.type == 'component') {
-        const path = (itemConfig.componentState as { path: string })
-          ?.path as string;
+        const path = (itemConfig.componentState as { path: string })?.path as string;
         const pathSplit = path.split('/');
         const componentType = pathSplit.pop() as string;
         const pluginName = pathSplit.pop() as string;
-        if (!ComponentPathMap.has(pluginName))
-          ComponentPathMap.set(pluginName, []);
+        if (!ComponentPathMap.has(pluginName)) ComponentPathMap.set(pluginName, []);
         if (ComponentPathMap.get(pluginName)!.includes(path)) return null;
         ComponentPathMap.get(pluginName)!.push(path);
         index = addComponent(path, itemConfig.title as string);
@@ -158,10 +144,7 @@ async function loadGLLayout(layoutConfig: LayoutConfig | ResolvedLayoutConfig) {
         else itemConfig.componentState = { refId: index };
       } else if (itemConfig.content.length > 0) {
         contents.push(
-          itemConfig.content as
-            | RowOrColumnItemConfig[]
-            | StackItemConfig[]
-            | ComponentItemConfig[]
+          itemConfig.content as RowOrColumnItemConfig[] | StackItemConfig[] | ComponentItemConfig[]
         );
       }
     }
@@ -178,12 +161,10 @@ function addComponent(path: string, title: string) {
   const pluginName = pathSplit.pop() as string;
   const glc = markRaw(
     defineAsyncComponent(() =>
-      import(`../components/Plugins/${pluginName}/${componentType}.vue`).catch(
-        error => {
-          console.error(error);
-          return import('@/components/NotFound.vue');
-        }
-      )
+      import(`../components/Plugins/${pluginName}/${componentType}.vue`).catch(error => {
+        console.error(error);
+        return import('@/components/NotFound.vue');
+      })
     )
   );
 
@@ -196,8 +177,7 @@ function addComponent(path: string, title: string) {
 }
 
 onMounted(() => {
-  if (GLRoot.value == null)
-    throw new Error("Golden Layout can't find the root DOM!");
+  if (GLRoot.value == null) throw new Error("Golden Layout can't find the root DOM!");
 
   const onResize = () => {
     const dom = GLRoot.value;
@@ -209,9 +189,7 @@ onMounted(() => {
   window.addEventListener('resize', onResize, { passive: true });
 
   const handleBeforeVirtualRectingEvent = (count: number) => {
-    GlBoundingClientRect = (
-      GLRoot.value as HTMLElement
-    ).getBoundingClientRect();
+    GlBoundingClientRect = (GLRoot.value as HTMLElement).getBoundingClientRect();
   };
 
   const handleContainerVirtualRectingRequiredEvent = (
@@ -221,20 +199,18 @@ onMounted(() => {
   ): void => {
     const component = MapComponents.get(container);
     if (!component || !component?.glc) {
-      throw new Error(
-        'handleContainerVirtualRectingRequiredEvent: Component not found'
-      );
+      throw new Error('handleContainerVirtualRectingRequiredEvent: Component not found');
     }
 
-    const containerBoundingClientRect =
-      container.element.getBoundingClientRect();
+    const containerBoundingClientRect = container.element.getBoundingClientRect();
     const left = containerBoundingClientRect.left - GlBoundingClientRect.left;
     const top = containerBoundingClientRect.top - GlBoundingClientRect.top;
-    (
-      (component.glc as unknown as Array<any>)[0] as InstanceType<
-        typeof GlComponent
-      >
-    ).setPosAndSize(left, top, width, height);
+    ((component.glc as unknown as Array<any>)[0] as InstanceType<typeof GlComponent>).setPosAndSize(
+      left,
+      top,
+      width,
+      height
+    );
 
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -249,15 +225,11 @@ onMounted(() => {
   ): void => {
     const component = MapComponents.get(container);
     if (!component || !component?.glc) {
-      throw new Error(
-        'handleContainerVirtualVisibilityChangeRequiredEvent: Component not found'
-      );
+      throw new Error('handleContainerVirtualVisibilityChangeRequiredEvent: Component not found');
     }
-    (
-      (component.glc as unknown as Array<any>)[0] as InstanceType<
-        typeof GlComponent
-      >
-    ).setVisibility(visible);
+    ((component.glc as unknown as Array<any>)[0] as InstanceType<typeof GlComponent>).setVisibility(
+      visible
+    );
   };
 
   const handleContainerVirtualZIndexChangeRequiredEvent = (
@@ -267,16 +239,12 @@ onMounted(() => {
   ): void => {
     const component = MapComponents.get(container);
     if (!component || !component?.glc) {
-      throw new Error(
-        'handleContainerVirtualZIndexChangeRequiredEvent: Component not found'
-      );
+      throw new Error('handleContainerVirtualZIndexChangeRequiredEvent: Component not found');
     }
 
-    (
-      (component.glc as unknown as Array<any>)[0] as InstanceType<
-        typeof GlComponent
-      >
-    ).setZIndex(defaultZIndex);
+    ((component.glc as unknown as Array<any>)[0] as InstanceType<typeof GlComponent>).setZIndex(
+      defaultZIndex
+    );
   };
 
   const bindComponentEventListener = (
@@ -287,9 +255,7 @@ onMounted(() => {
     if (itemConfig && itemConfig.componentState) {
       refId = (itemConfig.componentState as Json).refId as number;
     } else {
-      throw new Error(
-        "bindComponentEventListener: component's ref id is required"
-      );
+      throw new Error("bindComponentEventListener: component's ref id is required");
     }
 
     const ref = GlcKeyPrefix.value + refId;
@@ -303,11 +269,7 @@ onMounted(() => {
 
     container.virtualVisibilityChangeRequiredEvent = (container, visible) =>
       handleContainerVirtualVisibilityChangeRequiredEvent(container, visible);
-    container.virtualZIndexChangeRequiredEvent = (
-      container,
-      logicalZIndex,
-      defaultZIndex
-    ) => {
+    container.virtualZIndexChangeRequiredEvent = (container, logicalZIndex, defaultZIndex) => {
       //console.log("handleContainerVirtualZIndexChangeRequiredEvent", container, logicalZIndex, defaultZIndex);
       handleContainerVirtualZIndexChangeRequiredEvent(
         container,
@@ -331,17 +293,13 @@ onMounted(() => {
     };
   };
 
-  const unbindComponentEventListener = (
-    container: ComponentContainer
-  ): void => {
+  const unbindComponentEventListener = (container: ComponentContainer): void => {
     const component = MapComponents.get(container);
     if (!component || !component?.glc) {
       throw new Error('handleUnbindComponentEvent: Component not found');
     }
     const [, path] = AllComponents.value.get(component.refId);
-    ComponentPathMap = new Map(
-      [...ComponentPathMap].filter(([, value]) => value != path)
-    );
+    ComponentPathMap = new Map([...ComponentPathMap].filter(([, value]) => value != path));
     console.log('unbind: ', path);
 
     MapComponents.delete(container);

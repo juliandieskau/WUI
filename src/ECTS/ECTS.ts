@@ -1,12 +1,5 @@
 import ROSLIB from 'roslib';
-import {
-  Component,
-  defineAsyncComponent,
-  markRaw,
-  reactive,
-  ref,
-  type Ref
-} from 'vue';
+import { Component, defineAsyncComponent, markRaw, reactive, ref, type Ref } from 'vue';
 import type { ECTSPlugin } from './ECTSPlugin';
 import { ects_msgs, nav_msgs, sensor_msgs, std_msgs } from './Types/Messages';
 export class ECTS {
@@ -27,11 +20,7 @@ export class ECTS {
     this.ros.on('connection', () => {
       this.status.value = 'connected';
       this.mode = 'live';
-      this.callService(
-        '/ects/ects_status',
-        'ECTSStatus',
-        new ROSLIB.ServiceRequest({})
-      )
+      this.callService('/ects/ects_status', 'ECTSStatus', new ROSLIB.ServiceRequest({}))
         .then(response => {
           const responseCast = response as ects_msgs.ECTSStatus_srv;
           console.log(responseCast);
@@ -116,11 +105,11 @@ export class ECTS {
       plugin,
       markRaw(
         defineAsyncComponent(() =>
-          import(
-            `../components/Plugins/${pluginName}Plugin/${pluginName}PluginFooter.vue`
-          ).catch(() => {
-            this.footer.delete(plugin);
-          })
+          import(`../components/Plugins/${pluginName}Plugin/${pluginName}PluginFooter.vue`).catch(
+            () => {
+              this.footer.delete(plugin);
+            }
+          )
         )
       )
     );
@@ -169,21 +158,11 @@ export class ECTS {
       } else if (topicName === '/ects/system/cpu/usage') {
         setInterval(() => {
           if (this.plugins.get(plugin) === false) return;
-          const array = [
-            Math.random(),
-            Math.random(),
-            Math.random(),
-            Math.random()
-          ];
+          const array = [Math.random(), Math.random(), Math.random(), Math.random()];
           plugin.update(topicName, {
             total_usage: array.reduce((a, b) => a + b, 0) / array.length,
             per_core_usage: array,
-            load_averages: [
-              Math.random(),
-              Math.random(),
-              Math.random(),
-              Math.random()
-            ]
+            load_averages: [Math.random(), Math.random(), Math.random(), Math.random()]
           } as ects_msgs.CpuUsage);
         }, 1000);
       } else if (topicName === '/ects/system/mem/usage') {

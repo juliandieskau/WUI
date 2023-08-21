@@ -14,9 +14,7 @@ onMounted(async () => {
   await nextTick();
   await nextTick();
   if (!GLayoutRoot.value) throw new Error('GLayoutRoot is null');
-  let GLayoutRootConverted = GLayoutRoot.value as unknown as InstanceType<
-    typeof Glayout
-  >;
+  let GLayoutRootConverted = GLayoutRoot.value as unknown as InstanceType<typeof Glayout>;
 
   for (const [plugin, active] of props.ects.getPlugins()) {
     plugin.initWindows(GLayoutRootConverted, active);
@@ -27,12 +25,9 @@ onMounted(async () => {
     (newRaw, oldRaw) => {
       const newValue = new Map(newRaw);
       const oldValue = new Map(oldRaw);
-      const active = [...newValue]
-        .filter(([, active]) => active)
-        .map(([plugin]) => plugin);
+      const active = [...newValue].filter(([, active]) => active).map(([plugin]) => plugin);
       active.forEach(plugin => {
-        if (!oldValue.get(plugin))
-          plugin.initWindows(GLayoutRootConverted, true);
+        if (!oldValue.get(plugin)) plugin.initWindows(GLayoutRootConverted, true);
       });
     }
   );
@@ -44,8 +39,7 @@ onMounted(async () => {
     <glayout
       ref="GLayoutRoot"
       style="width: 100%; height: 100%"
-      :plugins="ects.getPlugins()"
-    ></glayout>
+      :plugins="ects.getPlugins()"></glayout>
   </main>
 </template>
 

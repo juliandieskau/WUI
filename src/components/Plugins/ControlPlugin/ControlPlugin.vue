@@ -3,43 +3,37 @@
     <button
       @mousedown="Control.startDirection('tleft')"
       @mouseup="Control.stopDirection('tleft')"
-      @mouseleave="Control.stopDirection('tleft')"
-    >
+      @mouseleave="Control.stopDirection('tleft')">
       <MaterialSymbolsRotateLeft />
     </button>
     <button
       @mousedown="Control.startDirection('forward')"
       @mouseup="Control.stopDirection('forward')"
-      @mouseleave="Control.stopDirection('forward')"
-    >
+      @mouseleave="Control.stopDirection('forward')">
       <MaterialSymbolsArrowUpwardAlt />
     </button>
     <button
       @mousedown="Control.startDirection('tright')"
       @mouseup="Control.stopDirection('tright')"
-      @mouseleave="Control.stopDirection('tright')"
-    >
+      @mouseleave="Control.stopDirection('tright')">
       <MaterialSymbolsRotateRight />
     </button>
     <button
       @mousedown="Control.startDirection('left')"
       @mouseup="Control.stopDirection('left')"
-      @mouseleave="Control.stopDirection('left')"
-    >
+      @mouseleave="Control.stopDirection('left')">
       <MaterialSymbolsArrowLeftAlt />
     </button>
     <button
       @mousedown="Control.startDirection('backward')"
       @mouseup="Control.stopDirection('backward')"
-      @mouseleave="Control.stopDirection('backward')"
-    >
+      @mouseleave="Control.stopDirection('backward')">
       <MaterialSymbolsArrowDownwardAlt />
     </button>
     <button
       @mousedown="Control.startDirection('right')"
       @mouseup="Control.stopDirection('right')"
-      @mouseleave="Control.stopDirection('right')"
-    >
+      @mouseleave="Control.stopDirection('right')">
       <MaterialSymbolsArrowRightAlt />
     </button>
   </div>
@@ -145,8 +139,7 @@ class Control {
               (Control.directions.get('forward') ? 1 : 0) +
               (Control.directions.get('backward') ? -1 : 0),
             y:
-              (Control.directions.get('left') ? 1 : 0) +
-              (Control.directions.get('right') ? -1 : 0),
+              (Control.directions.get('left') ? 1 : 0) + (Control.directions.get('right') ? -1 : 0),
             z: 0
           },
           angular: {
