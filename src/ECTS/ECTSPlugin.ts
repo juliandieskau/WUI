@@ -13,7 +13,7 @@ export abstract class ECTSPlugin {
     componentNames: string[] = [];
     ects: ECTS;
 
-    constructor(name: string, humanName: string, ects: ECTS, options?: { topics?: Map<string, string>, footerTopics?: Map<string, string>, componentNames?: string[] }) {
+    constructor(name: string, humanName: string, ects: ECTS, options?: { topics?: Map<string, string>, componentNames?: string[] }) {
         this.ects = ects;
         this.name = name;
         this.humanName = humanName;

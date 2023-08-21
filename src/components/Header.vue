@@ -4,33 +4,34 @@ const props = defineProps({
     index: { type: Number, required: true }
 });
 
-const emit = defineEmits({
-    sidebarOpen: () => true,
-    changeConnection: (index: number) => {
-        return index >= 0;
-    },
-    addConnection: (url: string) => {
-        try {
-            let parsed = new URL(url);
-            if (parsed.protocol != "ws:") {
-                throw new Error("Invalid protocol");
-            }
-            return true;
-        } catch {
-            console.error("Invalid URL: ", url);
-            return false;
-        }
-    },
-});
+const emit = defineEmits(
+    ['addConnection', 'changeConnection', 'sidebarOpen']);
 
 const connection = computed({
     get: () => {
         return props.urls[props.index];
     },
     set: (value) => {
-        emit("changeConnection", props.urls.indexOf(value));
+        changeConnection(props.urls.indexOf(value));
     }
 });
+
+function addConnection(url: string) {
+    try {
+        let parsed = new URL(url);
+        if (parsed.protocol != "ws:") {
+            throw new Error("Invalid protocol");
+        }
+        emit('addConnection', url);
+    } catch {
+        console.error("Invalid URL: ", url);
+    }
+};
+
+function changeConnection(index: number) {
+    if (index >= 0) emit('changeConnection', index);
+};
+
 const expanded = ref(false);
 const url = ref("");
 
@@ -44,7 +45,7 @@ import { computed, ref } from 'vue';
 
 <template>
     <header>
-        <button title="Menu" id="sidebar-btn" @click="$emit('sidebarOpen')" type="button">
+        <button title="Menu" id="sidebar-btn" @click="emit('sidebarOpen')" type="button">
             <material-symbols-menu style="font-size: 2em;" />
         </button>
         <select id="select-robot" v-model="connection" title="select connection" placeholder="add robot">
@@ -55,7 +56,7 @@ import { computed, ref } from 'vue';
         <button id="add-robot-btn" @click="expanded = !expanded" title="add new connection" type="button">
             <material-symbols-add-circle style="font-size: 2em;" :class="expanded ? 'rotated' : {}" />
         </button>
-        <form :class="expanded ? {} : 'hidden'" class="add-robot" @submit.prevent="$emit('addConnection', url)">
+        <form :class="expanded ? {} : 'hidden'" class="add-robot" @submit.prevent="addConnection(url)">
             <input type="text" placeholder="ECTS URL" v-model="url" :disabled="!expanded" />
             <button type="submit" :disabled="!expanded"><ic-round-check /></button>
         </form>
