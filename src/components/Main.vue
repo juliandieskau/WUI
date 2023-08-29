@@ -13,22 +13,26 @@ const GLayoutRoot = ref<null | HTMLElement>(null);
 onMounted(async () => {
   await nextTick();
   await nextTick();
+  console.group('initWindows');
   if (!GLayoutRoot.value) throw new Error('GLayoutRoot is null');
   let GLayoutRootConverted = GLayoutRoot.value as unknown as InstanceType<typeof Glayout>;
 
   for (const [plugin, active] of props.ects.getPlugins()) {
     plugin.initWindows(GLayoutRootConverted, active);
   }
+  console.groupEnd();
 
   watch(
     () => [...props.ects.getPlugins()],
     (newRaw, oldRaw) => {
+      console.group('initWindows from watch');
       const newValue = new Map(newRaw);
       const oldValue = new Map(oldRaw);
       const active = [...newValue].filter(([, active]) => active).map(([plugin]) => plugin);
       active.forEach(plugin => {
         if (!oldValue.get(plugin)) plugin.initWindows(GLayoutRootConverted, true);
       });
+      console.groupEnd();
     }
   );
 });
