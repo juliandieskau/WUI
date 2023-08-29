@@ -266,6 +266,7 @@ import { ECTS } from '@/ECTS/ECTS';
 import ROSLIB from 'roslib';
 import Quaternion from 'quaternion';
 import 'leaflet.utm';
+import 'leaflet-ellipse';
 
 import IonMdLocate from '~icons/ion/md-locate';
 import IcSharpAddLocationAlt from '~icons/ic/sharp-add-location-alt';
@@ -280,6 +281,7 @@ const props = defineProps({
 });
 
 const el: Ref<HTMLDivElement | null> = ref(null);
+const map: Ref<L.Map | null> = ref(null);
 const zoom: Ref<number> = ref(18);
 const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 
@@ -313,6 +315,23 @@ const angle = computed(() => {
   ];
   const q = new Quaternion(x, y, z, w);
   return q.toEuler().pitch;
+});
+
+const covarianceEllipse = computed(() => {
+  const pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
+  if (!pos) return null;
+  const [a, b, c, d] = [
+    pos.pose.covariance[0],
+    pos.pose.covariance[1],
+    pos.pose.covariance[7],
+    pos.pose.covariance[8]
+  ];
+  if (b != d) return null;
+  const x = (a + c) / 2 + Math.sqrt((a - c) ** 2 / 4 + b ** 2);
+  const y = (a + c) / 2 - Math.sqrt((a - c) ** 2 / 4 + b ** 2);
+  const theta = b == 0 ? (a >= c ? 0 : Math.PI / 2) : Math.atan2(x - a, b);
+  const ellipse: Record<string, number> = { x, y, theta };
+  return ellipse;
 });
 
 const current_waypoint_index = computed(() => {
@@ -349,6 +368,28 @@ watch(
     }
   }
 );
+
+watch([covarianceEllipse, position], ([ellipseValue, positionValue]) => {
+  if (!ellipseValue || !positionValue) return;
+  const ellipse = ellipseValue as Record<string, number>;
+  console.log(positionValue);
+  const ellipseElement = L.ellipse(
+    [positionValue[0], positionValue[1]],
+    [ellipse.x, ellipse.y],
+    ellipse.theta,
+    {
+      fill: false,
+      startAngle: 0,
+      endAngle: 360
+    }
+  ) as L.Layer;
+  const ellipse2 = L.ellipse([49.01576534028436, 8.42637311259198], [50, 10], 90, {
+    fill: true,
+    startAngle: 0,
+    endAngle: 360
+  });
+  ellipse2.addTo((map.value! as unknown as { leafletObject: any }).leafletObject);
+});
 
 watch(
   () => props.refs.get('/ects/waypoints/waypoint_list'),
