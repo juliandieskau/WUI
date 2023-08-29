@@ -25,10 +25,11 @@ onMounted(async () => {
   watch(
     () => [...props.ects.getPlugins()],
     (newRaw, oldRaw) => {
-      console.group('initWindows from watch');
       const newValue = new Map(newRaw);
       const oldValue = new Map(oldRaw);
       const active = [...newValue].filter(([, active]) => active).map(([plugin]) => plugin);
+      if (active.length === 0) return;
+      console.group('initWindows from watch');
       active.forEach(plugin => {
         if (!oldValue.get(plugin)) plugin.initWindows(GLayoutRootConverted, true);
       });
