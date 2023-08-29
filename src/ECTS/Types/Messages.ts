@@ -289,6 +289,6 @@ export namespace geometry_msgs {
   export type TwistWithCovariance = {
     twist: Twist;
     /** 6x6 matrix (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis) */
-    covariance: number[];
+    covariance: number[][];
   };
 }
