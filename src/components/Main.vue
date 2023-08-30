@@ -13,7 +13,7 @@ const GLayoutRoot = ref<null | HTMLElement>(null);
 onMounted(async () => {
   await nextTick();
   await nextTick();
-  console.group('initWindows');
+  console.groupCollapsed('initWindows');
   if (!GLayoutRoot.value) throw new Error('GLayoutRoot is null');
   let GLayoutRootConverted = GLayoutRoot.value as unknown as InstanceType<typeof Glayout>;
 
@@ -29,7 +29,7 @@ onMounted(async () => {
       const oldValue = new Map(oldRaw);
       const active = [...newValue].filter(([, active]) => active).map(([plugin]) => plugin);
       if (active.length === 0) return;
-      console.group('initWindows from watch');
+      console.groupCollapsed('initWindows from watch');
       active.forEach(plugin => {
         if (!oldValue.get(plugin)) plugin.initWindows(GLayoutRootConverted, true);
       });

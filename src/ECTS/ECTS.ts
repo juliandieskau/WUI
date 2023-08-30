@@ -14,7 +14,7 @@ export class ECTS {
   private url: string;
 
   constructor(url: string) {
-    console.group('ECTS constructor');
+    console.groupCollapsed('ECTS constructor');
     this.url = url;
     this.ros = new ROSLIB.Ros({ url: url });
     this.ros.on('connection', () => {
@@ -26,6 +26,7 @@ export class ECTS {
           console.log(responseCast);
           this.name.value = responseCast.robot_name;
           this.version.value = responseCast.version;
+          console.groupCollapsed('loading plugins from backend');
           this.plugins.forEach((_, plugin) => {
             if (responseCast.plugins_loaded.includes(plugin.name)) {
               this.activatePlugin(plugin);
@@ -33,7 +34,8 @@ export class ECTS {
               this.deactivatePlugin(plugin);
             }
           });
-          console.log('retransmit:');
+          console.groupEnd();
+          console.log('retransmit!');
           this.sendMessage(
             new ROSLIB.Topic({
               name: '/ects/retransmit',
