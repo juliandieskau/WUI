@@ -14,7 +14,7 @@ export class ECTS {
   private url: string;
 
   constructor(url: string) {
-    console.log('ECTS constructor');
+    console.group('ECTS constructor');
     this.url = url;
     this.ros = new ROSLIB.Ros({ url: url });
     this.ros.on('connection', () => {
@@ -50,10 +50,12 @@ export class ECTS {
         });
     });
     this.ros.on('error', () => {
+      console.group('activating all plugins due to error');
       this.status.value = 'error';
       this.plugins.forEach((_, plugin) => {
         this.activatePlugin(plugin);
       });
+      console.groupEnd();
     });
     const files = import.meta.glob('../components/Plugins/**/*.ts', {
       eager: true
@@ -63,6 +65,7 @@ export class ECTS {
       if (!plugin) return;
       this.addPlugin(plugin);
     });
+    console.groupEnd();
   }
   getRos(): ROSLIB.Ros {
     return this.ros;
@@ -291,11 +294,13 @@ export class ECTS {
     });
   }
   close() {
+    console.group("close");
     this.plugins.forEach((active, plugin) => {
       this.deactivatePlugin(plugin);
       plugin.close();
     });
     this.ros.close();
+    console.groupEnd();
   }
 
   private constructPlugin(path: string, module: any): ECTSPlugin | undefined {

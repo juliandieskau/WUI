@@ -9,7 +9,9 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "all": "pnpm install && pnpm build && pnpm preview",
+    "npm-all": "npm install && npm run build && npm run preview"
   },
   "dependencies": {
     "@iconify/json": "^2.2.86",

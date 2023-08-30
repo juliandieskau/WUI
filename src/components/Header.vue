@@ -21,8 +21,10 @@ function addConnection(url: string) {
     if (parsed.protocol != 'ws:') {
       throw new Error('Invalid protocol');
     }
+    expanded.value = false;
     emit('addConnection', url);
   } catch {
+    error.value = true;
     console.error('Invalid URL: ', url);
   }
 }
@@ -32,6 +34,7 @@ function changeConnection(index: number) {
 }
 
 const expanded = ref(false);
+const error = ref(false);
 const url = ref('');
 
 import MaterialSymbolsMenu from '~icons/material-symbols/menu';
@@ -61,8 +64,16 @@ import { computed, ref } from 'vue';
       type="button">
       <material-symbols-add-circle style="font-size: 2em" :class="expanded ? 'rotated' : {}" />
     </button>
-    <form :class="expanded ? {} : 'hidden'" class="add-robot" @submit.prevent="addConnection(url)">
-      <input type="text" placeholder="ECTS URL" v-model="url" :disabled="!expanded" />
+    <form
+      :class="[expanded ? {} : 'hidden', error ? 'error' : {}]"
+      class="add-robot"
+      @submit.prevent="addConnection(url)">
+      <input
+        type="text"
+        placeholder="ECTS URL"
+        v-model="url"
+        :disabled="!expanded"
+        @input="error = false" />
       <button type="submit" :disabled="!expanded"><ic-round-check /></button>
     </form>
   </header>
@@ -145,5 +156,9 @@ option {
 .add-robot button {
   border-radius: 0 8px 8px 0;
   border: 1px solid white;
+}
+
+.error {
+  color: red;
 }
 </style>

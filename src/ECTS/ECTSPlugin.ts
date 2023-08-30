@@ -28,9 +28,8 @@ export abstract class ECTSPlugin {
     this.data.set('#ects', this.ects);
   }
   initWindows(glayout: InstanceType<typeof Glayout>, active: boolean): void {
-    console.log(
-      `init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t) ${
-        active ? 'active' : 'inactive'
+    console.group(
+      `init ${this.name} (${this.componentNames.length}c  ${this.topics.size}t) ${active ? 'active' : 'inactive'
       }`
     );
     this.componentNames.forEach(async componentName => {
@@ -43,10 +42,11 @@ export abstract class ECTSPlugin {
         else glayout.addRefWithoutComponent(this, absolutePath);
       } catch (e) {
         if (e instanceof ComponentExistsError) {
-          console.log(`Component ${componentName} already exists in the layout. skipping`);
+          console.log(`${componentName} already exists in the layout. skipping`);
         }
       }
     });
+    console.groupEnd();
   }
   update(topic: string, message: any): void {
     this.data.set(topic, message);
