@@ -123,7 +123,8 @@
           :key="index"
           :lat-lng="[waypoint.pose.x, waypoint.pose.y]"
           draggable
-          @dragend="event => moveWaypoint(event, index)">
+          @dragstart="event => dragStart(event, index)"
+          @dragend="event => dragEnd(event, index)">
           <l-tooltip>
             <h2>{{ waypoint.name }} ({{ index }})</h2>
             <br />
@@ -231,10 +232,14 @@
           :lat-lng="[waypoint.pose.x, waypoint.pose.y]"
           :radius="waypoint.radius"
           color="blue" />
-        <template v-for="(waypoint, index) in waypointList.waypoints" :key="index">
+        <template
+          v-for="(waypoint, innerIndex) in waypointList.waypoints.filter(
+            waypoint => waypoint.use_heading
+          )"
+          :key="innerIndex">
           <l-polyline
-            v-if="waypoint.use_heading"
             color="blue"
+            :class="angleInUtm(waypoint.pose)"
             :lat-lngs="[
                         // line through current waypoint in direction of heading
                         [waypoint.pose.x, waypoint.pose.y],
@@ -283,17 +288,30 @@ const el: Ref<HTMLDivElement | null> = ref(null);
 const zoom: Ref<number> = ref(18);
 const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 
-const waypointLists = ref<string[]>([]);
+const waypointLists: Ref<string[]> = ref([]);
+let waypointListState: ects_msgs.WaypointList | null = null;
+const waypointList = computed(() => {
+  const value = props.refs.get('#waypoint_list') as ects_msgs.WaypointList;
+  waypointListState = {
+    ...value,
+    waypoints: value.waypoints
+      .map((waypoint, index) => {
+        if (index == waypointUpdateSuppressed.value) {
+          console.log('suppress waypoint update', index);
+          return waypointListState?.waypoints[index] || waypoint;
+        } else return waypoint;
+      })
+      .filter(waypoint => waypoint != null)
+  };
+  return value;
+});
+const waypointUpdateSuppressed = ref(-1);
 const selectedFilename = ref('');
 const waypoint_pose_theta = ref(0);
 const waypoint_heading_accuracy = ref(0);
 const swap_selected = ref(0);
 
 const ects = computed(() => props.refs.get('#ects') as ECTS);
-
-const waypointList = computed(() => {
-  return props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
-});
 
 const position = computed(() => {
   const pos = props.refs.get('/ects/control/position') as nav_msgs.Odometry;
@@ -311,13 +329,13 @@ const angle = computed(() => {
     pos.pose.pose.orientation.z,
     pos.pose.pose.orientation.w
   ];
-  const q = new Quaternion(x, y, z, w);
-  return q.toEuler().pitch;
+  const q = new Quaternion(w, x, y, z);
+  return q.toEuler().yaw;
 });
 
 const current_waypoint_index = computed(() => {
   const index = (props.refs.get('/ects/waypoints/current_waypoint') as std_msgs.UInt32)?.data;
-  if (index == null || index >= waypointList.value.waypoints?.length!) return null;
+  if (index == null || index >= waypointList.value?.waypoints?.length!) return null;
   return index;
 });
 
@@ -351,13 +369,34 @@ watch(
 );
 
 watch(
-  () => props.refs.get('/ects/waypoints/waypoint_list'),
+  () => props.refs.get('#waypoint_list'),
   (value, oldValue) => {
     if (!value && oldValue) {
       reset();
     }
   }
 );
+/**
+ * @description DragStartEvent on a waypoint marker. Start suppression of waypoint list updates.
+ * @param event the event that got fired
+ */
+function dragStart(event: Event, index: number) {
+  console.groupCollapsed('drag event', index);
+  console.log('start suppressing waypoint', index);
+  waypointUpdateSuppressed.value = index;
+}
+
+/**
+ * @description DragEndEvent on a waypoint marker. End suppression of waypoint list updates.
+ * @param event the event that got fired
+ * @param index the index of the waypoint to move
+ */
+function dragEnd(event: DragEndEvent, index: number) {
+  console.log('end suppressing waypoint', index);
+  waypointUpdateSuppressed.value = -1;
+  moveWaypoint(event, index);
+  console.groupEnd();
+}
 
 /**
  * @description Executes the current waypoint list.
@@ -394,7 +433,7 @@ function toggleRepeat() {
   });
   ects.value.sendMessage(
     topic,
-    new ROSLIB.Message({ data: !waypointList.value.cyclic } as std_msgs.Bool)
+    new ROSLIB.Message({ data: !waypointList.value?.cyclic } as std_msgs.Bool)
   );
 }
 
@@ -421,6 +460,7 @@ function reset() {
   waypointLists.value = [];
   selectedFilename.value = '';
   props.refs.set('/ects/waypoints/waypoint_list', null);
+  console.log('reset waypoint list');
 }
 
 /**
@@ -467,14 +507,14 @@ function promptWaypointListName() {
  * @description Places a new Waypoint in the middle of the screen.
  */
 function addWaypointMiddle() {
-  console.log('add waypoint', waypointList.value.waypoints.length, center.value);
+  console.groupCollapsed('add waypoint', waypointList.value?.waypoints.length);
+  console.log(center.value);
   if (!waypointList.value) return;
   const ects: ECTS = props.refs.get('#ects');
   const utm = latLngToUtm(
     (center.value as unknown as LatLng).lat,
     (center.value as unknown as LatLng).lng
   );
-  console.log(utm);
   const message = {
     waypoint: {
       name: 'new waypoint',
@@ -496,6 +536,7 @@ function addWaypointMiddle() {
     }),
     new ROSLIB.Message(message)
   );
+  console.groupEnd();
 }
 /**
  * @description DragEndEvent on a waypoint marker. Moves the waypoint to the new position
@@ -515,14 +556,13 @@ function moveWaypoint(event: DragEndEvent, index: number) {
  * @param waypoint the waypoint
  */
 function editWaypoint(index: number, waypoint: ects_msgs.Waypoint) {
-  console.log('send replace waypoint', index, waypoint.pose.x, waypoint.pose.y);
+  console.log('edit waypoint', index);
   const utm = latLngToUtm(waypoint.pose.x, waypoint.pose.y);
   const waypointUtm = {
     ...waypoint,
     pose: { x: utm.x, y: utm.y, theta: waypoint.pose.theta }
   } as ects_msgs.Waypoint;
   const ects: ECTS = props.refs.get('#ects');
-  console.log(waypointUtm);
   ects.sendMessage(
     new ROSLIB.Topic({
       ros: ects.getRos(),
@@ -559,9 +599,8 @@ function removeWaypoint(index: number) {
  * @param to_index the index which will be the new index for the waypoint
  */
 function reorderWaypoints(from_index: number, to_index: number) {
-  const permutation = Array.from(Array(waypointList.value.waypoints.length).keys());
+  const permutation = Array.from(Array(waypointList.value?.waypoints.length).keys());
   permutation.splice(to_index, 0, permutation.splice(from_index, 1)[0]);
-  console.log(permutation);
   ects.value.sendMessage(
     new ROSLIB.Topic({
       ros: ects.value.getRos(),

@@ -33,7 +33,6 @@ export default class MapPlugin extends ECTSPlugin {
     super.update(topic, message);
   }
 }
-
 function utmToLatLng(x: number, y: number) {
   const latLng = L.utm({
     x: x,
@@ -44,3 +43,4 @@ function utmToLatLng(x: number, y: number) {
   }).latLng();
   return latLng;
 }
+

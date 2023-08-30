@@ -97,7 +97,7 @@ export default class SystemPlugin extends ECTSPlugin {
         });
       })
       .finally(() => {
-        console.log(this.topics);
+        //console.log(this.topics);
       });
   }
   //update(topic: string, message: any): void {
