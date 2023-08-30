@@ -1,3 +1,8 @@
+# Building and deploying locally
+
+1. Make sure pnpm is installed
+2. ``` pnpm all ``` to compile and host locally
+
 # Hosting the Website
 
 1. Copy docker-compose.yml & nginx.conf into any ./folder on the host
