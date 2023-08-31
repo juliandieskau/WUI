@@ -18,7 +18,7 @@ export default class SystemPlugin extends ECTSPlugin {
     });
     this.ects
       .callService(
-        '/ects/system/aggregation',
+        '/ects/system/aggregations',
         'ects/AggregationList',
         new ROSLIB.ServiceRequest({})
       )
