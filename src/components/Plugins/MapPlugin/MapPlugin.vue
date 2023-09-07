@@ -294,7 +294,7 @@ const waypointList = computed(() => {
   const value = props.refs.get('#waypoint_list') as ects_msgs.WaypointList;
   waypointListState = {
     ...value,
-    waypoints: value.waypoints
+    waypoints: value?.waypoints
       .map((waypoint, index) => {
         if (index == waypointUpdateSuppressed.value) {
           console.log('suppress waypoint update', index);
