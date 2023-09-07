@@ -330,7 +330,7 @@ const angle = computed(() => {
     pos.pose.pose.orientation.w
   ];
   const q = new Quaternion(w, x, y, z);
-  return q.toEuler().yaw;
+  return -q.toEuler().yaw + Math.PI;
 });
 
 const current_waypoint_index = computed(() => {
