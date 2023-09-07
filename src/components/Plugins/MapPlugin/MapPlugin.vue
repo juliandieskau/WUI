@@ -291,7 +291,7 @@ const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 const waypointLists: Ref<string[]> = ref([]);
 let waypointListState: ects_msgs.WaypointList | null = null;
 const waypointList = computed(() => {
-  const value = props.refs.get('#waypoint_list') as ects_msgs.WaypointList;
+  const value = props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
   waypointListState = {
     ...value,
     waypoints: value?.waypoints
@@ -369,7 +369,7 @@ watch(
 );
 
 watch(
-  () => props.refs.get('#waypoint_list'),
+  () => props.refs.get('/ects/waypoints/waypoint_list'),
   (value, oldValue) => {
     if (!value && oldValue) {
       reset();
