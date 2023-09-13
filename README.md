@@ -1,3 +1,16 @@
+# Building and deploying locally
+
+1. Make sure pnpm is installed; if not run ``` curl -fsSL https://get.pnpm.io/install.sh | sh - ```
+2. ``` pnpm all ``` to compile and host locally
+
+# Hosting the Website
+
+1. Copy docker-compose.yml & nginx.conf into any ./folder on the host
+2. Build Project like it says below
+3. upload /dist content into ./folder/src folder on the host
+4. ```docker-compose up -d``` to start server 
+
+
 # ects-web
 
 This template should help get you started developing with Vue 3 in Vite.

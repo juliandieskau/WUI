@@ -1,0 +1,25 @@
+version: '3.3'
+
+services:
+  pse:
+    container_name: "pse"
+    image: nginx
+    volumes:
+      - ./src:/usr/share/nginx/html
+      - ./nginx.conf/:/etc/nginx/nginx.conf:ro    
+### EITHER uncomment when hosting without proxy (http only) or proxy other than traefik
+#    ports: 
+#      - 80:80
+#
+### OR uncomment for use with a preconfigured traefik reverse proxy (like the one running behind https://pse.hock.re)
+#    networks:
+#      - web
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.pse.entrypoints=websecure"
+#      - "traefik.http.services.pse.loadbalancer.server.port=80"
+#      - "traefik.http.routers.pse.rule=Host(`pse.hock.re`)"
+#
+#networks:
+#  web:
+#    external: true
