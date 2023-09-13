@@ -1,6 +1,6 @@
 # Building and deploying locally
 
-1. Make sure pnpm is installed
+1. Make sure pnpm is installed; if not run ``` curl -fsSL https://get.pnpm.io/install.sh | sh - ```
 2. ``` pnpm all ``` to compile and host locally
 
 # Hosting the Website
