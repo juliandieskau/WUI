@@ -59,7 +59,7 @@
             :style="`transform: rotate(${angle}rad)`" />
         </l-icon>
       </l-marker>
-      <template v-if="props.refs.get('#waypoint_list')">
+      <template v-if="waypointList">
         <template v-if="current_waypoint_index != null">
           <!--dotted line from robot to current waypoint-->
           <l-polyline
@@ -68,8 +68,8 @@
             v-if="position"
             :lat-lngs="[
               [
-                waypointList.waypoints[current_waypoint_index].pose.x,
-                waypointList.waypoints[current_waypoint_index].pose.y
+                waypointList.waypoints[current_waypoint_index]?.pose.x,
+                waypointList.waypoints[current_waypoint_index]?.pose.y
               ],
               [position[0], position[1]]
             ]" />
@@ -102,24 +102,25 @@
         <template v-else>
           <!--lines between waypoints when unknown current waypoint-->
           <l-polyline
+            v-if="waypointList"
             :color="waypoint_is_executing ? 'green' : 'gray'"
             :lat-lngs="
-              waypointList.waypoints.map(waypoint => [waypoint.pose.x, waypoint.pose.y])
+              waypointList?.waypoints?.map(waypoint => [waypoint.pose.x, waypoint.pose.y])
             " />
         </template>
         <l-polyline
           color="gray"
-          v-if="position && waypointList.cyclic"
+          v-if="position && waypointList?.cyclic"
           dash-array="1, 16"
           :lat-lngs="[
             [
-              waypointList.waypoints[waypointList.waypoints.length - 1].pose.x,
-              waypointList.waypoints[waypointList.waypoints.length - 1].pose.y
+              waypointList?.waypoints[waypointList.waypoints.length - 1].pose.x,
+              waypointList?.waypoints[waypointList.waypoints.length - 1].pose.y
             ],
-            [waypointList.waypoints[0].pose.x, waypointList.waypoints[0].pose.y]
+            [waypointList?.waypoints[0].pose.x, waypointList?.waypoints[0].pose.y]
           ]" />
         <l-marker
-          v-for="(waypoint, index) in waypointList.waypoints"
+          v-for="(waypoint, index) in waypointList?.waypoints"
           :key="index"
           :lat-lng="[waypoint.pose.x, waypoint.pose.y]"
           draggable
@@ -142,7 +143,7 @@
                   v-model="swap_selected"
                   @change="() => reorderWaypoints(swap_selected, index)">
                   <option
-                    v-for="(_, swap_index) in waypointList.waypoints"
+                    v-for="(_, swap_index) in waypointList?.waypoints"
                     :key="swap_index"
                     :value="swap_index"
                     :selected="swap_index == index">
@@ -227,13 +228,13 @@
           </l-popup>
         </l-marker>
         <l-circle
-          v-for="(waypoint, index) in waypointList.waypoints"
+          v-for="(waypoint, index) in waypointList?.waypoints"
           :key="index"
           :lat-lng="[waypoint.pose.x, waypoint.pose.y]"
           :radius="waypoint.radius"
           color="blue" />
         <template
-          v-for="(waypoint, innerIndex) in waypointList.waypoints.filter(
+          v-for="(waypoint, innerIndex) in waypointList?.waypoints?.filter(
             waypoint => waypoint.use_heading
           )"
           :key="innerIndex">
@@ -288,28 +289,38 @@ const el: Ref<HTMLDivElement | null> = ref(null);
 const zoom: Ref<number> = ref(18);
 const center: Ref<PointTuple> = ref([49.01550865987086, 8.425810112163253]);
 
+const waypointList: Ref<ects_msgs.WaypointList | null> = ref(null);
 const waypointLists: Ref<string[]> = ref([]);
-let waypointListState: ects_msgs.WaypointList | null = null;
-const waypointList = computed(() => {
-  const value = props.refs.get('/ects/waypoints/waypoint_list') as ects_msgs.WaypointList;
-  waypointListState = {
-    ...value,
-    waypoints: value?.waypoints
-      .map((waypoint, index) => {
-        if (index == waypointUpdateSuppressed.value) {
-          console.log('suppress waypoint update', index);
-          return waypointListState?.waypoints[index] || waypoint;
-        } else return waypoint;
-      })
-      .filter(waypoint => waypoint != null)
-  };
-  return value;
-});
-const waypointUpdateSuppressed = ref(-1);
+
+const waypointUpdateSuppressed: Ref<boolean> = ref(false);
 const selectedFilename = ref('');
 const waypoint_pose_theta = ref(0);
 const waypoint_heading_accuracy = ref(0);
 const swap_selected = ref(0);
+
+watch(
+  () => props.refs.get('/ects/waypoints/waypoint_list'),
+  (value, oldValue) => {
+    console.log('waypoint list update', waypointUpdateSuppressed.value, value);
+    if (!value && oldValue) {
+      reset();
+      return;
+    }
+    const waypointListObj = props.refs.get(
+      '/ects/waypoints/waypoint_list'
+    ) as ects_msgs.WaypointList;
+    const waypointsLatLng = waypointListObj.waypoints.map(waypoint => {
+      const latLng = utmToLatLng(waypoint.pose.x, waypoint.pose.y);
+      waypoint.pose.x = latLng.lat;
+      waypoint.pose.y = latLng.lng;
+      return waypoint;
+    });
+    waypointListObj.waypoints = waypointsLatLng;
+    if (waypointUpdateSuppressed.value) return;
+    else waypointList.value = waypointListObj;
+  },
+  { immediate: true }
+);
 
 const ects = computed(() => props.refs.get('#ects') as ECTS);
 
@@ -368,14 +379,6 @@ watch(
   }
 );
 
-watch(
-  () => props.refs.get('/ects/waypoints/waypoint_list'),
-  (value, oldValue) => {
-    if (!value && oldValue) {
-      reset();
-    }
-  }
-);
 /**
  * @description DragStartEvent on a waypoint marker. Start suppression of waypoint list updates.
  * @param event the event that got fired
@@ -383,7 +386,7 @@ watch(
 function dragStart(event: Event, index: number) {
   console.groupCollapsed('drag event', index);
   console.log('start suppressing waypoint', index);
-  waypointUpdateSuppressed.value = index;
+  waypointUpdateSuppressed.value = true;
 }
 
 /**
@@ -393,7 +396,7 @@ function dragStart(event: Event, index: number) {
  */
 function dragEnd(event: DragEndEvent, index: number) {
   console.log('end suppressing waypoint', index);
-  waypointUpdateSuppressed.value = -1;
+  waypointUpdateSuppressed.value = false;
   moveWaypoint(event, index);
   console.groupEnd();
 }
@@ -525,7 +528,7 @@ function addWaypointMiddle() {
       },
       radius: 1
     },
-    index: waypointList.value.waypoints.length
+    index: waypointList.value?.waypoints.length
   } as ects_msgs.AddWaypoint;
   console.log(message);
   ects.sendMessage(
@@ -545,7 +548,7 @@ function addWaypointMiddle() {
  */
 function moveWaypoint(event: DragEndEvent, index: number) {
   if (!waypointList.value) return;
-  const waypointLatLng = waypointList.value.waypoints[index];
+  const waypointLatLng = waypointList.value?.waypoints[index];
   waypointLatLng.pose.x = event.target.getLatLng().lat;
   waypointLatLng.pose.y = event.target.getLatLng().lng;
   editWaypoint(index, waypointLatLng);
