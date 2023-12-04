@@ -1,3 +1,9 @@
+Project ported from Gitlab.<br>
+Project for university together with 4 other students, contributions in the Web Interface mainly by another student.<br>
+Project formed as a whole together with terminal interface and backend.<br>
+This was made in collaboration with the Fraunhofer IOSB, who gave their permission to make our code public.
+
+
 # Building and deploying locally
 
 1. Make sure pnpm is installed; if not run ``` curl -fsSL https://get.pnpm.io/install.sh | sh - ```
